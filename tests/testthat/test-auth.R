@@ -1,0 +1,2 @@
+require(testthat)
+require(appropedia)

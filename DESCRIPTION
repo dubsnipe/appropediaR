@@ -1,0 +1,27 @@
+Package: appropedia
+Type: Package
+Title: Appropedia helper functions
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Emilio", "Velis",
+      email = "emilio.velis@appropedia.org",
+      role = c("aut", "cre")
+    )
+  )
+Description: This package contains useful functions for Appropedia's management.
+    It includes tools to obtain page informataion, interact with the API,
+    download materials and edit the wiki if needed.
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr
+Suggests:
+    httr,
+    readr,
+    stringr,
+    lubridate,
+    jsonlite
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0
