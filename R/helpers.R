@@ -19,10 +19,53 @@ appropedia_query <- function(
 }
 
 
+
+get_checkpoint_dir <- function() {
+  
+  dir <- tools::R_user_dir(
+    "appropedia",
+    which = "data"
+  )
+  
+  dir.create(
+    dir,
+    recursive = TRUE,
+    showWarnings = FALSE
+  )
+  
+  dir
+}
+resolve_checkpoint_path <- function(checkpoint_file) {
+  
+  if (is.null(checkpoint_file)) {
+    return(
+      file.path(
+        get_checkpoint_dir(),
+        "checkpoint.rds"
+      )
+    )
+  }
+  
+  # no path supplied, only filename
+  if (basename(checkpoint_file) == checkpoint_file) {
+    return(
+      file.path(
+        get_checkpoint_dir(),
+        checkpoint_file
+      )
+    )
+  }
+  
+  # user supplied full or relative path
+  checkpoint_file
+}
 load_checkpoint <- function(checkpoint_file, 
                             force_restart = FALSE, 
                             default_value = NULL) {
   
+  checkpoint_file <- resolve_checkpoint_path(
+    checkpoint_file
+  )
   if (force_restart && file.exists(checkpoint_file)) {
     file.remove(checkpoint_file)
     message("Existing checkpoint removed. Starting from scratch.")
@@ -43,7 +86,9 @@ checkpoint_manager <- function(i,
                                state,
                                label = "Checkpoint",
                                state_keys = c("resolved", "next_index")) {
-  
+  checkpoint_file <- resolve_checkpoint_path(
+    checkpoint_file
+  )
   next_index <- i + 1
   
   if (i %% checkpoint_interval == 0 || i == n) {
@@ -70,6 +115,9 @@ checkpoint_manager <- function(i,
 #   
 # checkpoint_vector_state()   # redirects, linear processing
 # checkpoint_cursor_state()   # SMW, pagination
+
+
+
 
 #' Debug function
 build_smw_query <- function(category, property_map) {
