@@ -1,3 +1,18 @@
+stop_if_invalid_session <- function(session) {
+  
+  if (missing(session) || is.null(session)) {
+    stop("A valid wiki_session is required.", call. = FALSE)
+  }
+  
+  if (!inherits(session, "wiki_session")) {
+    stop(
+      "session must be a wiki_session object returned by do_login().",
+      call. = FALSE
+    )
+  }
+  
+  invisible(TRUE)
+}
 appropedia_query <- function(
     query,
     handle = NULL,
@@ -16,6 +31,47 @@ appropedia_query <- function(
     httr::content(res, as = "text", encoding = "UTF-8")
   )
   
+}
+
+appropedia_save <- function(
+    page_name,
+    content,
+    session,
+    summary = "Page update",
+    bot = TRUE
+) {
+  
+  stop_if_invalid_session(session)
+  
+  res <- retry_request(httr::POST(
+    get_appropedia_api_url(),
+    body = list(
+      action = "edit",
+      title = page_name,
+      text = content,
+      summary = summary,
+      token = session$csrf_token,
+      format = "json",
+      bot = as.integer(bot)
+    ),
+    encode = "form",
+    handle = session$handle
+  ))
+  
+  response <- httr::content(
+    res,
+    as = "parsed",
+    type = "application/json"
+  )
+  
+  if (!is.null(response$edit) &&
+      response$edit$result == "Success") {
+    return(TRUE)
+  }
+  
+  print(response)
+  
+  FALSE
 }
 
 
@@ -117,20 +173,54 @@ checkpoint_manager <- function(i,
 # checkpoint_cursor_state()   # SMW, pagination
 
 
-
-
-#' Debug function
-build_smw_query <- function(category, property_map) {
+retry_request <- function(
+    expr,
+    max_retries = 5,
+    initial_delay = 5,
+    max_delay = 60
+) {
   
-  props <- names(property_map)
-  props <- props[!is.na(props) & props != ""]
+  delay <- initial_delay
   
-  property_clause <- paste0("|?", paste(props, collapse = "|?"))
+  for (attempt in seq_len(max_retries)) {
+    
+    result <- tryCatch(
+      eval.parent(substitute(expr)),
+      error = function(e) e
+    )
+    
+    if (!inherits(result, "error")) {
+      return(result)
+    }
+    
+    message(
+      "Attempt ",
+      attempt,
+      " failed: ",
+      conditionMessage(result)
+    )
+    
+    if (attempt < max_retries) {
+      Sys.sleep(delay)
+      delay <- min(delay * 2, max_delay)
+    }
+  }
   
-  query <- paste0(
-    "[[Category:", category, "]]",
-    property_clause
-  )
-  
-  return(query)
+  stop("Maximum retries exceeded.")
 }
+
+#' #' Debug function
+#' build_smw_query <- function(category, property_map) {
+#'   
+#'   props <- names(property_map)
+#'   props <- props[!is.na(props) & props != ""]
+#'   
+#'   property_clause <- paste0("|?", paste(props, collapse = "|?"))
+#'   
+#'   query <- paste0(
+#'     "[[Category:", category, "]]",
+#'     property_clause
+#'   )
+#'   
+#'   return(query)
+#' }
