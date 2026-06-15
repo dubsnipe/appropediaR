@@ -2,20 +2,70 @@
 % Please edit documentation in R/templates.R
 \name{update_template_parameter}
 \alias{update_template_parameter}
-\title{Update a template parameter and save using the MediaWiki API
-This function reads a page, locates a template parameter, updates it and
-saves the page.}
+\title{Update a template parameter on a wiki page}
 \usage{
 update_template_parameter(
   page_name,
   template_name,
   param_name,
   new_value,
-  session
+  session,
+  dry_run = FALSE,
+  report = T
 )
 }
+\arguments{
+\item{page_name}{Character string containing the page title.}
+
+\item{template_name}{Character string containing the template name.}
+
+\item{param_name}{Character string containing the parameter name.}
+
+\item{new_value}{Character string containing the new parameter value.}
+
+\item{session}{A \code{wiki_session} object returned by
+\code{\link{do_login}}.}
+
+\item{dry_run}{Logical indicating whether the edit should be simulated
+without saving changes.}
+
+\item{report}{Logical indicating whether a structured report should be
+returned.}
+}
+\value{
+A list describing the operation, including page name, parameter
+updated, timestamp, change status, and save result.
+}
 \description{
-Update a template parameter and save using the MediaWiki API
-This function reads a page, locates a template parameter, updates it and
-saves the page.
+Reads a page from the wiki, updates a template parameter, and optionally
+saves the result through the MediaWiki API.
+}
+\details{
+This function combines page retrieval, template modification, and page
+saving into a single workflow.
+
+If no change is required, the page is not saved.
+
+When \code{dry_run = TRUE}, the page is read and modified locally but no edit
+is submitted to the wiki.
+
+When \code{report = TRUE}, a structured report is returned to facilitate
+batch editing workflows and auditing.
+}
+\examples{
+\dontrun{
+session <- do_login()
+
+update_template_parameter(
+  page_name = "Water",
+  template_name = "Page data",
+  param_name = "description",
+  new_value = "Example description",
+  session = session
+)
+}
+}
+\seealso{
+\code{\link{modify_template}},
+\code{\link{do_login}}
 }

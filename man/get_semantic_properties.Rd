@@ -2,7 +2,7 @@
 % Please edit documentation in R/metadata.R
 \name{get_semantic_properties}
 \alias{get_semantic_properties}
-\title{Collect semantic properties for a list of pages.}
+\title{Retrieve semantic properties for a collection of pages}
 \usage{
 get_semantic_properties(
   pages_list,
@@ -14,6 +14,61 @@ get_semantic_properties(
   checkpoint_interval = 5
 )
 }
+\arguments{
+\item{pages_list}{Character vector containing page titles.}
+
+\item{property_map}{Named character vector mapping output column names to
+Semantic MediaWiki property names.}
+
+\item{handle}{Optional \code{httr} handle used to maintain session state
+across requests.}
+
+\item{force_restart}{Logical indicating whether an existing checkpoint
+should be deleted and processing restarted.}
+
+\item{checkpoint_file}{Character string containing the checkpoint filename
+or file path.}
+
+\item{chunk_size}{Number of pages included in each Semantic MediaWiki query.}
+
+\item{checkpoint_interval}{Number of chunks processed between checkpoint
+saves.}
+}
+\value{
+A data frame containing one row per page and one column per property
+defined in \code{property_map}.
+}
 \description{
-Collect semantic properties for a list of pages.
+Collects Semantic MediaWiki properties for a large list of pages.
+}
+\details{
+Pages are queried in batches and results are converted into a standardized
+tabular structure using the supplied property map.
+
+Progress is periodically saved to a checkpoint file so that interrupted
+workflows can be resumed without restarting from the beginning.
+
+This function is designed for large-scale metadata extraction workflows.
+
+The output schema is determined by \code{property_map}, ensuring that the
+same columns are returned even when pages contain different subsets of
+properties.
+
+Checkpoints are automatically cleaned up after successful completion unless
+processing is interrupted.
+}
+\examples{
+\dontrun{
+pages <- get_pages_from_category("Water")
+
+metadata <- get_semantic_properties(
+  pages_list = pages,
+  property_map = property_map
+)
+}
+}
+\seealso{
+\code{\link{get_semantic_query}},
+\code{\link{parse_smw_result}},
+\code{\link{property_map}}
 }

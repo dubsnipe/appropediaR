@@ -2,14 +2,44 @@
 % Please edit documentation in R/helpers.R
 \name{load_checkpoint}
 \alias{load_checkpoint}
-\title{Load the checkpoint file
-This function loads a temporary file or deletes and starts over according to
-user's instructions.}
+\title{Load a checkpoint file}
 \usage{
 load_checkpoint(checkpoint_file, force_restart = FALSE, default_value = NULL)
 }
+\arguments{
+\item{checkpoint_file}{Character string containing the checkpoint filename
+or file path.}
+
+\item{force_restart}{Logical indicating whether an existing checkpoint
+should be deleted and the workflow restarted.}
+
+\item{default_value}{Object returned when no checkpoint exists or when
+restarting.}
+}
+\value{
+The checkpoint object or \code{default_value}.
+}
 \description{
-Load the checkpoint file
-This function loads a temporary file or deletes and starts over according to
-user's instructions.
+Loads a checkpoint file for a long-running workflow.
+}
+\details{
+If the checkpoint file exists, its contents are returned. If
+\code{force_restart = TRUE}, the existing checkpoint is removed and the
+supplied default value is returned instead.
+}
+\examples{
+\dontrun{
+checkpoint <- load_checkpoint(
+  "redirects_checkpoint.rds",
+  default_value = list(
+    resolved = character(),
+    next_index = 1
+  )
+)
+}
+}
+\seealso{
+\code{\link{cleanup_checkpoint}},
+\code{\link{validate_checkpoint_structure}},
+\code{\link{validate_checkpoint_length}}
 }

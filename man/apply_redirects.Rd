@@ -2,18 +2,54 @@
 % Please edit documentation in R/redirects.R
 \name{apply_redirects}
 \alias{apply_redirects}
-\title{Resolve redirects for a list of pages.
-Use this function to clean a pages list. This function stores a}
+\title{Resolve redirects for a list of pages}
 \usage{
 apply_redirects(
   names_list,
   force_restart = FALSE,
   checkpoint_file = "redirects_checkpoint.rds",
-  checkpoint_interval = 100,
-  delete_temp = FALSE
+  checkpoint_interval = 100
 )
 }
+\arguments{
+\item{names_list}{Character vector containing page titles.}
+
+\item{force_restart}{Logical indicating whether an existing checkpoint
+should be deleted and processing restarted from the beginning.}
+
+\item{checkpoint_file}{Character string containing the checkpoint filename
+or file path.}
+
+\item{checkpoint_interval}{Number of pages processed between checkpoint
+saves.}
+}
+\value{
+Character vector containing the resolved page titles.
+}
 \description{
-Resolve redirects for a list of pages.
-Use this function to clean a pages list. This function stores a
+Resolves redirects for an entire vector of page titles.
+}
+\details{
+This function is useful for cleaning page lists before performing metadata
+extraction, category analysis, or bulk editing operations.
+
+Progress is periodically saved to a checkpoint file so that interrupted
+workflows can be resumed without restarting from the beginning.
+
+This function preserves the original vector order.
+}
+\examples{
+\dontrun{
+pages <- c(
+  "Greywater",
+  "Composting toilet"
+)
+
+resolved_pages <- apply_redirects(pages)
+}
+}
+\seealso{
+\code{\link{resolve_redirect}},
+\code{\link{load_checkpoint}},
+\code{\link{checkpoint_manager}}
 }

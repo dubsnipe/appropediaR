@@ -2,10 +2,24 @@
 % Please edit documentation in R/auth.R
 \name{get_appropedia_api_url}
 \alias{get_appropedia_api_url}
-\title{Get Appropedia's API URL from local environment.}
+\title{Get Appropedia API URL}
 \usage{
 get_appropedia_api_url()
 }
+\value{
+A character string containing the API URL, or an empty string if the
+environment variable is not set.
+}
 \description{
-Get Appropedia's API URL from local environment.
+Retrieves the Appropedia MediaWiki API endpoint stored in the local
+environment.
+}
+\details{
+The URL is read from the \code{APPROPEDIA_API_URL}
+environment variable.
+}
+\examples{
+\dontrun{
+get_appropedia_api_url()
+}
 }

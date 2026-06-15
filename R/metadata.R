@@ -323,7 +323,7 @@ get_semantic_properties <- function(
     
     checkpoint_manager(
       i = i,
-      n = length(chunked_pages_list),
+      input_size = length(chunked_pages_list),
       checkpoint_interval = checkpoint_interval,
       checkpoint_file = checkpoint_file,
       state = list(

@@ -2,9 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{appropedia_save}
 \alias{appropedia_save}
-\title{Edit a page on Appropedia
-This function interacts with the MediaWiki API to commit a save on the wiki.
-Use it to make a call that requires a CSRF token such as page edits.}
+\title{Save a page through the MediaWiki API}
 \usage{
 appropedia_save(
   page_name,
@@ -14,8 +12,39 @@ appropedia_save(
   bot = TRUE
 )
 }
+\arguments{
+\item{page_name}{Character string containing the page title.}
+
+\item{content}{Character string containing the new page content.}
+
+\item{session}{A \code{wiki_session} object returned by
+\code{\link{do_login}}.}
+
+\item{summary}{Edit summary recorded in the page history.}
+
+\item{bot}{Logical indicating whether the edit should be marked as a bot
+edit.}
+}
+\value{
+The parsed API response.
+}
 \description{
-Edit a page on Appropedia
-This function interacts with the MediaWiki API to commit a save on the wiki.
-Use it to make a call that requires a CSRF token such as page edits.
+Performs an authenticated page edit using the MediaWiki API.
+}
+\details{
+This helper function centralizes API communication for operations that
+require a CSRF token, such as page edits.
+}
+\examples{
+\dontrun{
+appropedia_save(
+  page_name = "Sandbox",
+  content = "Example edit",
+  session = session
+)
+}
+}
+\seealso{
+\code{\link{do_login}},
+\code{\link{appropedia_query}}
 }

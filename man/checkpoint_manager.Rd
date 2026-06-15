@@ -2,19 +2,80 @@
 % Please edit documentation in R/helpers.R
 \name{checkpoint_manager}
 \alias{checkpoint_manager}
-\title{Manage checkpoint iteration logic
-This function manages checkpoint creation and update during iteration.}
+\title{Manage checkpoint creation during iteration}
 \usage{
 checkpoint_manager(
   i,
-  n,
+  input_size,
   checkpoint_interval,
   checkpoint_file,
   state,
   label = "Checkpoint"
 )
 }
+\arguments{
+\item{i}{Current iteration index.}
+
+\item{input_size}{Total number of iterations.}
+
+\item{checkpoint_interval}{Number of iterations between checkpoint saves.}
+
+\item{checkpoint_file}{Character string containing the checkpoint filename
+or file path.}
+
+\item{state}{Named list containing the workflow state to save.
+Do not include \code{next_index} or \code{input_length}; these are added
+automatically.}
+
+\item{label}{Character string used when printing progress messages.}
+}
+\value{
+Integer indicating the next iteration index that should be processed
+if the workflow is resumed from the checkpoint.
+}
 \description{
-Manage checkpoint iteration logic
-This function manages checkpoint creation and update during iteration.
+Creates or updates a checkpoint file during an iterative workflow.
+}
+\details{
+This helper centralizes checkpoint logic for long-running processes such as
+redirect resolution, category extraction, and semantic metadata collection.
+
+A checkpoint is written when the current iteration reaches a checkpoint
+interval or the final iteration.
+
+In addition to the user-supplied state, the checkpoint automatically stores
+the next iteration index and the total input length required to resume and
+validate the workflow.
+
+The checkpoint file contains:
+\itemize{
+\item User-supplied workflow state.
+\item \code{next_index}, the next iteration to process.
+\item \code{input_length}, the total number of items in the original input.
+}
+
+These metadata fields are used by
+\code{\link{load_checkpoint}},
+\code{\link{validate_checkpoint_structure}}, and
+\code{\link{validate_checkpoint_length}} to safely resume interrupted
+workflows.
+}
+\examples{
+\dontrun{
+next_index <- checkpoint_manager(
+  i = i,
+  input_size = length(names_list),
+  checkpoint_interval = 100,
+  checkpoint_file = "redirects_checkpoint.rds",
+  state = list(
+    resolved = resolved
+  )
+)
+}
+}
+\seealso{
+\code{\link{load_checkpoint}},
+\code{\link{cleanup_checkpoint}},
+\code{\link{validate_checkpoint_structure}},
+\code{\link{validate_checkpoint_length}}
 }

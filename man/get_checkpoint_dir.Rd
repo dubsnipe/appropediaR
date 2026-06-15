@@ -2,14 +2,22 @@
 % Please edit documentation in R/helpers.R
 \name{get_checkpoint_dir}
 \alias{get_checkpoint_dir}
-\title{Manage local checkpoint files
-This function manages a local folder to store checkpoint files for the
-iterative functions.}
+\title{Get the checkpoint directory}
 \usage{
 get_checkpoint_dir()
 }
+\value{
+Character string containing the checkpoint directory path.
+}
 \description{
-Manage local checkpoint files
-This function manages a local folder to store checkpoint files for the
-iterative functions.
+Returns the directory used by the package to store checkpoint files for
+long-running workflows.
+}
+\details{
+The directory is created automatically if it does not already exist.
+}
+\examples{
+\dontrun{
+get_checkpoint_dir()
+}
 }

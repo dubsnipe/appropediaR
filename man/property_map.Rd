@@ -2,10 +2,30 @@
 % Please edit documentation in R/constants.R
 \name{property_map}
 \alias{property_map}
-\title{Schema definition based on Appropedia's Special:Properties}
+\title{Semantic MediaWiki property schema}
+\format{
+A named character vector.
+}
+\source{
+Appropedia Special:Properties.
+}
 \usage{
 property_map
 }
 \description{
-Schema definition based on Appropedia's Special:Properties
+Named character vector mapping Appropedia Semantic MediaWiki property names
+to standardized column names used by the package.
+}
+\details{
+This object defines the schema used when retrieving semantic metadata with
+functions such as \code{get_semantic_properties()}.
+
+The names of the vector correspond to output column names, while the values
+correspond to Semantic MediaWiki property names on the wiki.
+}
+\examples{
+\dontrun{
+property_map["Page_title"]
+names(property_map)
+}
 }

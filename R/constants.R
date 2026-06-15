@@ -16,8 +16,9 @@
 #'
 #' @source MediaWiki namespace constants.
 #' @examples
+#'\dontrun{
 #' mediawiki_namespaces
-"mediawiki_namespaces"
+#' }
 mediawiki_namespaces <- data.frame(number = 0:15, name = c("",
                                                  "Talk",
                                                  "User",
@@ -51,9 +52,10 @@ mediawiki_namespaces <- data.frame(number = 0:15, name = c("",
 #' @source Appropedia Special:Properties.
 #'
 #' @examples
+#'\dontrun{
 #' property_map["Page_title"]
 #' names(property_map)
-"property_map"
+#' }
 property_map <- c(
   Device_hardware_license = "Device hardware license",
   Device_software_license = "Device software license",

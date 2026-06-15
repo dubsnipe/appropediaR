@@ -2,10 +2,34 @@
 % Please edit documentation in R/helpers.R
 \name{validate_checkpoint_structure}
 \alias{validate_checkpoint_structure}
-\title{Validate the checkpoint structure}
+\title{Validate checkpoint structure}
 \usage{
-validate_checkpoint_structure(checkpoint, required_fields)
+validate_checkpoint_structure(checkpoint, required_fields, checkpoint_file)
+}
+\arguments{
+\item{checkpoint}{Checkpoint object loaded from disk.}
+
+\item{required_fields}{Character vector containing required field names.}
+
+\item{checkpoint_file}{Path to the checkpoint file.}
+}
+\value{
+Invisibly returns \code{TRUE} if validation succeeds.
+An error is raised if validation fails.
 }
 \description{
-Validate the checkpoint structure
+Verifies that a checkpoint object contains the required fields expected by
+the current workflow.
+}
+\details{
+This helper is intended to detect incompatible or corrupted checkpoint
+files before processing resumes.
+}
+\examples{
+\dontrun{
+validate_checkpoint_structure(
+  checkpoint,
+  c("resolved", "next_index")
+)
+}
 }

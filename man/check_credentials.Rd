@@ -2,10 +2,23 @@
 % Please edit documentation in R/auth.R
 \name{check_credentials}
 \alias{check_credentials}
-\title{See if there are credentials stored}
+\title{Check whether Appropedia credentials are configured}
 \usage{
 check_credentials()
 }
+\value{
+Logical. Returns \code{TRUE} if the required credentials are
+available and \code{FALSE} otherwise.
+}
 \description{
-See if there are credentials stored
+Verifies that the required Appropedia environment variables are available.
+}
+\details{
+This function is primarily used before attempting authentication with the
+MediaWiki API.
+}
+\examples{
+\dontrun{
+check_credentials()
+}
 }

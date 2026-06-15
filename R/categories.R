@@ -26,9 +26,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' get_page_categories("Water")
+#' get_categories_for_pages("Water")
 #'
-#' get_page_categories(
+#' get_categories_for_pages(
 #'   c("Water", "Ocean")
 #' )
 #' }
@@ -92,7 +92,7 @@ get_categories_for_pages <- function(page_names) {
 #' @return A data frame with one row per page-category relationship.
 #'
 #' @seealso
-#' \code{\link{get_page_categories}},
+#' \code{\link{get_categories_for_pages}},
 #' \code{\link{checkpoint_manager}},
 #' \code{\link{load_checkpoint}}
 #'
@@ -102,6 +102,7 @@ get_categories_for_pages <- function(page_names) {
 #'   pages_list = get_all_pages()
 #' )
 #' }
+#' @export
 batch_get_page_categories <- function(pages_list,
                             force_restart = FALSE,
                             checkpoint_file = "categories_checkpoint.rds",
@@ -136,21 +137,21 @@ batch_get_page_categories <- function(pages_list,
       next
     }
     
-    categories_batch[[i]] <- get_page_categories(chunk)
+    categories_batch[[i]] <- get_categories_for_pages(chunk)
     
     next_index <- checkpoint_manager(
       i = i,
-      n = length(chunked_pages_list),
+      input_size = length(chunked_pages_list),
       checkpoint_interval = checkpoint_interval,
       checkpoint_file = checkpoint_file,
       state = list(
         categories_batch = categories_batch,
-        input_length = n
+        input_length = length(chunked_pages_list)
       )
     )
   }
   
-  cleanup_checkpoint(delete_temp, checkpoint_file)
+  cleanup_checkpoint(checkpoint_file)
   
   # flatten result if needed
   do.call(rbind, categories_batch)
@@ -183,7 +184,7 @@ count_pages_in_category <- function(
 ) {
   
   offset <- 0
-  total <- 0
+  processed_total  <- 0
   
   repeat {
     
@@ -202,11 +203,11 @@ count_pages_in_category <- function(
     
     batch_size <- length(res$query$results)
     
-    total <- total + batch_size
+    processed_total  <- processed_total + batch_size
     
     cat(
       "Retrieved", batch_size,
-      "pages. Running total:", total,
+      "pages. Running total:", processed_total,
       "\n"
     )
     
@@ -220,7 +221,7 @@ count_pages_in_category <- function(
     offset <- next_offset
   }
   
-  return(total)
+  return(processed_total)
 }
 
 
@@ -239,16 +240,14 @@ count_pages_in_category <- function(
 #' @return Character vector containing page titles.
 #'
 #' @seealso
-#' \code{\link{get_page_categories}},
+#' \code{\link{get_categories_for_pages}},
 #' \code{\link{count_pages_in_category}}
 #'
 #' @examples
 #' \dontrun{
 #' pages <- get_pages_from_category("Water")
 #' }
-get_pages_from_category <- function(category,
-                               limit = 500,
-                               base_url = get_appropedia_api_url()) {
+get_pages_from_category <- function(category, limit = 500) {
   
   all_pages <- character()
   cmcontinue <- NULL
@@ -266,10 +265,7 @@ get_pages_from_category <- function(category,
       query$cmcontinue <- cmcontinue
     }
     
-    res <- httr::GET(base_url, query = query)
-    json <- httr::content(res, as = "text", encoding = "UTF-8")
-    data <- jsonlite::fromJSON(json)
-    
+    data <- appropedia_query(query = query)
     pages <- data$query$categorymembers
     
     if (length(pages) > 0) {

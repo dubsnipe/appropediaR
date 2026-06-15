@@ -3,19 +3,35 @@
 \name{get_semantic_query}
 \alias{get_semantic_query}
 \title{metadata.R
-Single interface for a Semantic MediaWiki query through the API}
+Execute a Semantic MediaWiki query}
 \usage{
 get_semantic_query(query, handle = NULL)
 }
 \arguments{
-\item{query}{a SMW ask query.}
+\item{query}{Character string containing a Semantic MediaWiki ask query.}
 
-\item{handle}{an \code{httr} handle.}
+\item{handle}{Optional \code{httr} handle used to maintain session state
+across requests.}
 }
 \value{
-the result of the SMW ask query over the API.
+Parsed Semantic MediaWiki API response as a nested R list.
 }
 \description{
-metadata.R
-Single interface for a Semantic MediaWiki query through the API
+Sends a Semantic MediaWiki ask query through the MediaWiki API and returns
+the parsed result.
+}
+\details{
+This function is a lightweight wrapper around the Semantic MediaWiki
+\code{action=ask} API endpoint.
+}
+\examples{
+\dontrun{
+get_semantic_query(
+  "[[Category:Water]]|?Page title"
+)
+}
+}
+\seealso{
+\code{\link{parse_smw_result}},
+\code{\link{get_semantic_properties}}
 }

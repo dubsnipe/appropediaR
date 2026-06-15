@@ -3,13 +3,30 @@
 \name{mediawiki_namespaces}
 \alias{mediawiki_namespaces}
 \title{constants.R
-Table with the names of mediawiki namespaces
-See https://www.mediawiki.org/wiki/Manual:Namespace_constants}
+MediaWiki namespace definitions}
+\format{
+A data frame with two columns:
+\describe{
+\item{number}{Integer namespace identifier.}
+\item{name}{Namespace name.}
+}
+}
+\source{
+MediaWiki namespace constants.
+}
 \usage{
 mediawiki_namespaces
 }
 \description{
-constants.R
-Table with the names of mediawiki namespaces
-See https://www.mediawiki.org/wiki/Manual:Namespace_constants
+Lookup table containing MediaWiki namespace IDs and their corresponding
+names.
+}
+\details{
+See:
+https://www.mediawiki.org/wiki/Manual:Namespace_constants
+}
+\examples{
+\dontrun{
+mediawiki_namespaces
+}
 }

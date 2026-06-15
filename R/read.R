@@ -32,11 +32,6 @@ get_page_content <- function(
     handle = NULL
 ) {
   
-  if (!is.null(session)) {
-    stop_if_invalid_session(session)
-    handle <- session$handle
-  }
-  
   q <- list(
     action = "query",
     prop = "revisions",
@@ -75,6 +70,7 @@ get_page_content <- function(
     return(NULL)
   }
   
-  revisions$slots$main$`*`[1]
+  # revisions$slots$main$`*`[1]
+  revisions[[1]]$slots$main$`*`
 }
 

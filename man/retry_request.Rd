@@ -2,10 +2,42 @@
 % Please edit documentation in R/helpers.R
 \name{retry_request}
 \alias{retry_request}
-\title{Manage API retries and timeouts}
+\title{Retry a potentially failing operation}
 \usage{
 retry_request(expr, max_retries = 5, initial_delay = 5, max_delay = 60)
 }
+\arguments{
+\item{expr}{Expression to evaluate.}
+
+\item{max_retries}{Maximum number of retry attempts.}
+
+\item{initial_delay}{Initial delay in seconds before retrying.}
+
+\item{max_delay}{Maximum delay in seconds between retry attempts.}
+}
+\value{
+The result of the evaluated expression.
+}
 \description{
-Manage API retries and timeouts
+Executes an expression and automatically retries when an error occurs.
+}
+\details{
+This helper is intended for network requests and other transient operations
+that may fail temporarily.
+
+Delays between retries increase by an exponential backoff strategy until
+until reaching the specified maximum delay.
+}
+\examples{
+\dontrun{
+retry_request(
+  appropedia_query(
+    list(
+      action = "query",
+      meta = "siteinfo",
+      format = "json"
+    )
+  )
+)
+}
 }

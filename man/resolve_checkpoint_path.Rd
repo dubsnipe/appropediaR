@@ -2,14 +2,32 @@
 % Please edit documentation in R/helpers.R
 \name{resolve_checkpoint_path}
 \alias{resolve_checkpoint_path}
-\title{Resolve a path for temporary files
-This function will set a default checkpoint directory or a specific file path
-provided by the user to store the temporary files.}
+\title{Resolve a checkpoint file path}
 \usage{
 resolve_checkpoint_path(checkpoint_file)
 }
+\arguments{
+\item{checkpoint_file}{Character string containing a checkpoint filename or
+file path.}
+}
+\value{
+Character string containing the resolved file path.
+}
 \description{
-Resolve a path for temporary files
-This function will set a default checkpoint directory or a specific file path
-provided by the user to store the temporary files.
+Resolves the full path used for a checkpoint file.
+}
+\details{
+If a filename is supplied without a directory component, the file is stored
+in the package checkpoint directory returned by
+\code{\link{get_checkpoint_dir}}.
+
+If a complete path is supplied, it is used unchanged.
+}
+\examples{
+\dontrun{
+resolve_checkpoint_path("checkpoint.rds")
+}
+}
+\seealso{
+\code{\link{get_checkpoint_dir}}
 }

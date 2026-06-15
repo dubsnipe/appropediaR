@@ -3,11 +3,23 @@
 \name{get_appropedia_username}
 \alias{get_appropedia_username}
 \title{R/auth.R
-Get username from local environment.}
+Get Appropedia username}
 \usage{
 get_appropedia_username()
 }
+\value{
+A character string containing the configured username, or an empty
+string if the environment variable is not set.
+}
 \description{
-R/auth.R
-Get username from local environment.
+Retrieves the Appropedia username stored in the local environment.
+}
+\details{
+The username is read from the \code{APPROPEDIA_API_USERNAME}
+environment variable.
+}
+\examples{
+\dontrun{
+get_appropedia_username()
+}
 }

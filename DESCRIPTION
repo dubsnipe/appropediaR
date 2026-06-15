@@ -6,7 +6,7 @@ Authors@R: c(
     person(
       "Emilio",
       "Velis",
-      email = "",
+      email = "emilio.velis@appropedia.org",
       role = c("aut", "cre")
   ))
 Description: Tools for interacting with Appropedia through the MediaWiki
@@ -18,12 +18,12 @@ License: CC0
 Encoding: UTF-8
 LazyData: true
 Imports:
-    dplyr,
     httr,
+    dplyr,
+    stringr,
     jsonlite
 Suggests:
     lubridate,
-    readr,
-    stringr
+    readr
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.0.0

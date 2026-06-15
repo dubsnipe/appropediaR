@@ -2,16 +2,50 @@
 % Please edit documentation in R/auth.R
 \name{do_login}
 \alias{do_login}
-\title{Executing login. Do this to obtain API access.}
+\title{Log in to Appropedia}
 \usage{
 do_login(
   api_url = get_appropedia_api_url(),
   handle = httr::handle(get_appropedia_api_url())
 )
 }
+\arguments{
+\item{api_url}{Character string containing the MediaWiki API endpoint.
+Defaults to the URL configured in the local environment.}
+
+\item{handle}{The API handle.}
+}
+\value{
+An object of class \code{wiki_session} containing:
+\describe{
+\item{login_result}{Response returned by the MediaWiki login request.}
+\item{csrf_token}{CSRF token used for authenticated edit operations.}
+\item{handle}{An \code{httr} handle used to maintain the authenticated session.}
+}
+}
 \description{
-1: Get login token
-2: Perform login
-3: Get CSRF token for edits
-4: Return a session object
+Authenticates with the Appropedia MediaWiki API and returns an authenticated
+session object for subsequent API requests.
+}
+\details{
+The login process performs the following steps:
+\enumerate{
+\item Retrieve a login token.
+\item Submit username and password credentials.
+\item Retrieve a CSRF token for edit operations.
+\item Return an authenticated session object.
+}
+
+User credentials are read from the environment variables
+\code{APPROPEDIA_API_USERNAME} and
+\code{APPROPEDIA_API_PASSWORD}.
+}
+\examples{
+\dontrun{
+session <- do_login()
+}
+}
+\seealso{
+\code{\link{check_credentials}},
+\code{\link{get_login_token}}
 }

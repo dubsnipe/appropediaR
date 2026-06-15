@@ -166,7 +166,9 @@ appropedia_save <- function(
 #' @return Character string containing the checkpoint directory path.
 #'
 #' @examples
+#' \dontrun{
 #' get_checkpoint_dir()
+#'}
 get_checkpoint_dir <- function() {
   
   dir <- tools::R_user_dir(
@@ -202,7 +204,9 @@ get_checkpoint_dir <- function() {
 #' @seealso \code{\link{get_checkpoint_dir}}
 #'
 #' @examples
+#'\dontrun{
 #' resolve_checkpoint_path("checkpoint.rds")
+#'}
 resolve_checkpoint_path <- function(checkpoint_file) {
   
   if (is.null(checkpoint_file)) {
@@ -291,6 +295,7 @@ load_checkpoint <- function(checkpoint_file,
 #'
 #' @param checkpoint Checkpoint object loaded from disk.
 #' @param required_fields Character vector containing required field names.
+#' @param checkpoint_file Path to the checkpoint file.
 #'
 #' @return Invisibly returns \code{TRUE} if validation succeeds.
 #' An error is raised if validation fails.
@@ -304,7 +309,8 @@ load_checkpoint <- function(checkpoint_file,
 #' }
 validate_checkpoint_structure <- function(
     checkpoint,
-    required_fields
+    required_fields,
+    checkpoint_file
 ) {
   
   missing <- setdiff(
@@ -418,7 +424,7 @@ validate_checkpoint_length <- function(
 #' validate the workflow.
 #'
 #' @param i Current iteration index.
-#' @param n Total number of iterations.
+#' @param input_size Total number of iterations.
 #' @param checkpoint_interval Number of iterations between checkpoint saves.
 #' @param checkpoint_file Character string containing the checkpoint filename
 #' or file path.
@@ -454,7 +460,7 @@ validate_checkpoint_length <- function(
 #' \dontrun{
 #' next_index <- checkpoint_manager(
 #'   i = i,
-#'   n = length(names_list),
+#'   input_size = length(names_list),
 #'   checkpoint_interval = 100,
 #'   checkpoint_file = "redirects_checkpoint.rds",
 #'   state = list(
@@ -462,9 +468,10 @@ validate_checkpoint_length <- function(
 #'   )
 #' )
 #' }
+#' @export
 checkpoint_manager <- function(
     i,
-    n,
+    input_size,
     checkpoint_interval,
     checkpoint_file,
     state,
@@ -474,11 +481,11 @@ checkpoint_manager <- function(
   checkpoint_file <- resolve_checkpoint_path(checkpoint_file)
   next_index <- i + 1
   
-  if (i %% checkpoint_interval == 0 && i < n) {
-    next_index <- if (i < n) i + 1 else i
+  if (i %% checkpoint_interval == 0 && i < input_size) {
+    next_index <- if (i < input_size) i + 1 else i
     
     saveRDS(
-      c(state, list(next_index = next_index, input_length = n)),
+      c(state, list(next_index = next_index, input_length = input_size)),
       checkpoint_file
       )
     

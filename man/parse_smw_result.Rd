@@ -2,10 +2,43 @@
 % Please edit documentation in R/metadata.R
 \name{parse_smw_result}
 \alias{parse_smw_result}
-\title{Parse and organize Semantic MediaWii results}
+\title{Parse a Semantic MediaWiki result}
 \usage{
 parse_smw_result(page_result, property_map)
 }
+\arguments{
+\item{page_result}{A single page result from a Semantic MediaWiki
+\code{action=ask} query.}
+
+\item{property_map}{Named character vector mapping output column names to
+Semantic MediaWiki property names.}
+}
+\value{
+A one-row data frame containing the parsed page metadata.
+}
 \description{
-Parse and organize Semantic MediaWii results
+Converts a single Semantic MediaWiki result into a standardized tabular
+format based on a property map.
+}
+\details{
+This function extracts values from Semantic MediaWiki printouts and maps
+them to a predefined schema, ensuring that all expected columns are present
+even when a page does not contain every property.
+
+Property values are normalized using
+\code{\link{flatten_smw_value}}.
+}
+\examples{
+\dontrun{
+page <- smw_response$query$results[[1]]
+
+parse_smw_result(
+  page_result = page,
+  property_map = property_map
+)
+}
+}
+\seealso{
+\code{\link{flatten_smw_value}},
+\code{\link{get_semantic_query}}
 }

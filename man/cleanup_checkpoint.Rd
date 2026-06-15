@@ -2,10 +2,27 @@
 % Please edit documentation in R/helpers.R
 \name{cleanup_checkpoint}
 \alias{cleanup_checkpoint}
-\title{Delete a temporary checkpoint after iterations}
+\title{Delete a checkpoint file}
 \usage{
-cleanup_checkpoint(delete_temp = TRUE, checkpoint_file)
+cleanup_checkpoint(checkpoint_file)
+}
+\arguments{
+\item{checkpoint_file}{Character string containing the checkpoint filename
+or file path.}
+}
+\value{
+Invisibly returns \code{TRUE} if the file was removed or does not
+exist.
 }
 \description{
-Delete a temporary checkpoint after iterations
+Removes a checkpoint file after a workflow has completed successfully.
+}
+\details{
+This helper is typically called at the end of an iterative process to avoid
+resuming from stale state in future runs.
+}
+\examples{
+\dontrun{
+cleanup_checkpoint("redirects_checkpoint.rds")
+}
 }

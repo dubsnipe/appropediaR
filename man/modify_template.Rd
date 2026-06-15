@@ -3,11 +3,46 @@
 \name{modify_template}
 \alias{modify_template}
 \title{templates.r
-Modify a specific page's template using regex on the wikitext.}
+Modify a template parameter in page wikitext}
 \usage{
 modify_template(content, new_value, template_name, param_name)
 }
+\arguments{
+\item{content}{Character string containing page wikitext.}
+
+\item{new_value}{Character string containing the new parameter value.}
+
+\item{template_name}{Character string containing the template name.}
+
+\item{param_name}{Character string containing the parameter name.}
+}
+\value{
+A list containing:
+\itemize{
+\item \code{content}: updated wikitext.
+\item \code{changed}: logical indicating whether a modification occurred.
+}
+}
 \description{
-templates.r
-Modify a specific page's template using regex on the wikitext.
+Updates or inserts a parameter inside a template contained in a page's
+wikitext.
+}
+\details{
+If the parameter already exists, its value is replaced. If the parameter is
+not present, it is added to the first matching template instance.
+
+This function only modifies text locally and does not perform any API calls.
+}
+\examples{
+\dontrun{
+modify_template(
+  content = page_text,
+  new_value = "New description",
+  template_name = "Page data",
+  param_name = "description"
+)
+}
+}
+\seealso{
+\code{\link{update_template_parameter}}
 }

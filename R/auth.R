@@ -12,7 +12,9 @@
 #' string if the environment variable is not set.
 #'
 #' @examples
+#'\dontrun{
 #' get_appropedia_username()
+#'}
 get_appropedia_username <- function() {
   Sys.getenv("APPROPEDIA_API_USERNAME")
 }
@@ -29,7 +31,9 @@ get_appropedia_username <- function() {
 #' string if the environment variable is not set.
 #'
 #' @examples
+#'\dontrun{
 #' get_appropedia_password()
+#'}
 get_appropedia_password <- function() {
   Sys.getenv("APPROPEDIA_API_PASSWORD")
 }
@@ -47,7 +51,9 @@ get_appropedia_password <- function() {
 #' environment variable is not set.
 #'
 #' @examples
+#'\dontrun{
 #' get_appropedia_api_url()
+#'}
 get_appropedia_api_url <- function() {
   Sys.getenv("APPROPEDIA_API_URL")
 }
@@ -64,7 +70,9 @@ get_appropedia_api_url <- function() {
 #' available and \code{FALSE} otherwise.
 #'
 #' @examples
+#'\dontrun{
 #' check_credentials()
+#'}
 check_credentials <- function() {
   username <- Sys.getenv("APPROPEDIA_API_USERNAME")
   password <- Sys.getenv("APPROPEDIA_API_PASSWORD")
@@ -97,7 +105,7 @@ check_credentials <- function() {
 #'}
 get_login_token <- function(api_url = get_appropedia_api_url(),
                             handle = httr::handle(get_appropedia_api_url())) {
-  res <- GET(
+  res <- httr::GET(
     api_url,
     query = list(
       action = "query",
@@ -107,7 +115,7 @@ get_login_token <- function(api_url = get_appropedia_api_url(),
     ),
     handle = handle
   )
-  token <- content(res)$query$tokens$logintoken
+  token <- httr::content(res)$query$tokens$logintoken
   if (is.null(token)) {
     stop("Failed to retrieve login token")
   }
@@ -134,6 +142,7 @@ get_login_token <- function(api_url = get_appropedia_api_url(),
 #'
 #' @param api_url Character string containing the MediaWiki API endpoint.
 #' Defaults to the URL configured in the local environment.
+#' @param handle The API handle.
 #'
 #' @return An object of class \code{wiki_session} containing:
 #' \describe{
@@ -152,7 +161,7 @@ get_login_token <- function(api_url = get_appropedia_api_url(),
 do_login <- function(api_url = get_appropedia_api_url(),
                      handle = httr::handle(get_appropedia_api_url())) {
   login_token <- get_login_token(api_url, handle)
-  res <- POST(
+  res <- httr::POST(
     get_appropedia_api_url(),
     body = list(
       action = "login",
@@ -164,11 +173,11 @@ do_login <- function(api_url = get_appropedia_api_url(),
     encode = "form",
     handle = handle
   )
-  login_result <<- content(res)$login
+  login_result <- httr::content(res)$login
   if (is.null(login_result) || login_result$result != "Success") {
     stop("Login failed")
   }
-  res <- GET(
+  res <- httr::GET(
     get_appropedia_api_url(),
     query = list(
       action = "query",
@@ -177,7 +186,7 @@ do_login <- function(api_url = get_appropedia_api_url(),
     ),
     handle = handle
   )
-  csrf_token <- content(res)$query$tokens$csrftoken
+  csrf_token <- httr::content(res)$query$tokens$csrftoken
   if (is.null(csrf_token)) {
     stop("Failed to retrieve CSRF token")
   }
@@ -232,8 +241,13 @@ check_bot_rights <- function(session) {
 
 
 #' Log out of the API
+#' @param handle The API handle.
+#' @examples
+#' \dontrun{
+#' session <- do_logout()
+#' }
 do_logout <- function(handle = httr::handle(get_appropedia_api_url())) {
-  res <- POST(
+  res <- httr::POST(
     get_appropedia_api_url(),
     body = list(
       action = "logout",

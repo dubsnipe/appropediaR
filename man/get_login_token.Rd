@@ -2,13 +2,33 @@
 % Please edit documentation in R/auth.R
 \name{get_login_token}
 \alias{get_login_token}
-\title{Obtain a login token.}
+\title{Obtain a MediaWiki login token}
 \usage{
 get_login_token(
   api_url = get_appropedia_api_url(),
   handle = httr::handle(get_appropedia_api_url())
 )
 }
+\arguments{
+\item{api_url}{Character string containing the MediaWiki API endpoint.
+Defaults to the URL configured in the local environment.}
+
+\item{handle}{Optional \code{httr} handle object used to maintain session
+state across requests.}
+}
+\value{
+A character string containing the login token.
+}
 \description{
-Helper function: it's called by do_login() when logging in.
+Retrieves a login token from the MediaWiki API.
+This is an internal helper function used by \code{do_login()} as part of
+the MediaWiki authentication process.
+}
+\examples{
+\dontrun{
+get_login_token()
+}
+}
+\seealso{
+\code{\link{do_login}}
 }

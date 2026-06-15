@@ -2,14 +2,35 @@
 % Please edit documentation in R/helpers.R
 \name{validate_checkpoint_length}
 \alias{validate_checkpoint_length}
-\title{Validate a checkpoint's length
-This is a simple validator to ensure input data integrity. It will not work
-for every case.}
+\title{Validate checkpoint length}
 \usage{
 validate_checkpoint_length(checkpoint, current_length, checkpoint_file)
 }
+\arguments{
+\item{checkpoint}{Checkpoint object loaded from disk.}
+
+\item{current_length}{Length of the current input data.}
+
+\item{checkpoint_file}{Character string containing the checkpoint filename
+or file path.}
+}
+\value{
+Invisibly returns \code{TRUE} if validation succeeds.
+An error is raised if validation fails.
+}
 \description{
-Validate a checkpoint's length
-This is a simple validator to ensure input data integrity. It will not work
-for every case.
+Verifies that a checkpoint is compatible with the current input data.
+}
+\details{
+This helper is intended to detect situations where a workflow is resumed
+using a different input vector than the one used to create the checkpoint.
+}
+\examples{
+\dontrun{
+validate_checkpoint_length(
+  checkpoint,
+  current_length = length(names_list),
+  checkpoint_file = "redirects_checkpoint.rds"
+)
+}
 }

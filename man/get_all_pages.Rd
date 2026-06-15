@@ -3,18 +3,42 @@
 \name{get_all_pages}
 \alias{get_all_pages}
 \title{get_pages.R
-Get a full list of pages on Appropedia.
-This function retrieves pages from using a MediaWiki API query.}
+Retrieve pages from a MediaWiki namespace}
 \usage{
-get_all_pages(
-  base_url = get_appropedia_api_url(),
-  limit = 500,
-  handle = NULL,
-  namespace = 0
-)
+get_all_pages(limit = 500, handle = NULL, namespace = 0)
+}
+\arguments{
+\item{limit}{Maximum number of pages requested per API call.
+The MediaWiki API may impose its own limits depending on user rights.}
+
+\item{handle}{Optional \code{httr} handle used to maintain session state
+across requests.}
+
+\item{namespace}{Integer namespace identifier. Defaults to \code{0}
+(main namespace).
+
+Use \code{mediawiki_namespaces} to identify namespace numbers.}
+}
+\value{
+A character vector containing page titles.
 }
 \description{
-get_pages.R
-Get a full list of pages on Appropedia.
-This function retrieves pages from using a MediaWiki API query.
+Retrieves page titles from Appropedia using the MediaWiki
+\code{allpages} API query.
+}
+\details{
+Results are automatically paginated using the API continuation mechanism
+until all matching pages have been retrieved.
+}
+\examples{
+\dontrun{
+# Retrieve all pages in the main namespace
+pages <- get_all_pages()
+
+# Retrieve all templates
+templates <- get_all_pages(namespace = 10)
+}
+}
+\seealso{
+\code{\link{mediawiki_namespaces}}
 }

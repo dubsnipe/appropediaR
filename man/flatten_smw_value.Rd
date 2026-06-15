@@ -2,12 +2,47 @@
 % Please edit documentation in R/metadata.R
 \name{flatten_smw_value}
 \alias{flatten_smw_value}
-\title{Flatten a Semantic MediaWiki result.
-This function normalizes various content types}
+\title{Normalize a Semantic MediaWiki value}
 \usage{
 flatten_smw_value(x)
 }
+\arguments{
+\item{x}{A value returned by a Semantic MediaWiki printout.}
+}
+\value{
+A normalized value suitable for inclusion in a data frame.
+Most values are returned as character strings.
+}
 \description{
-Flatten a Semantic MediaWiki result.
-This function normalizes various content types
+Converts Semantic MediaWiki values into a consistent format suitable for
+tabular storage and analysis.
+}
+\details{
+This helper handles common Semantic MediaWiki return types including page
+references, dates, coordinates, quantities, booleans, and text values.
+
+Multiple values are concatenated using a semicolon separator.
+
+Supported Semantic MediaWiki value types include:
+\itemize{
+\item Page references
+\item Dates and timestamps
+\item Coordinates
+\item Quantities and units
+\item Boolean values
+\item Wikitext links
+\item Plain text values
+}
+
+Empty values are returned as \code{NA_character_}.
+}
+\examples{
+\dontrun{
+flatten_smw_value(
+  list("Water", "Sanitation")
+)
+}
+}
+\seealso{
+\code{\link{parse_smw_result}}
 }

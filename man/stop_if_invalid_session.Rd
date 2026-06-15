@@ -3,15 +3,34 @@
 \name{stop_if_invalid_session}
 \alias{stop_if_invalid_session}
 \title{helpers.R
-Stop a workflow if the API session is invalid
-This function will review the session status and will prompt the user to
-review the session using do_login()}
+Validate an authenticated session}
 \usage{
 stop_if_invalid_session(session)
 }
+\arguments{
+\item{session}{A \code{wiki_session} object returned by
+\code{\link{do_login}}.}
+}
+\value{
+Invisibly returns \code{TRUE} if the session is valid.
+An error is raised if the session is invalid.
+}
 \description{
-helpers.R
-Stop a workflow if the API session is invalid
-This function will review the session status and will prompt the user to
-review the session using do_login()
+Verifies that a \code{wiki_session} object is valid and can be used for
+authenticated API requests.
+}
+\details{
+This function is intended for use at the start of workflows that require an
+authenticated session. If the session is invalid, the workflow is stopped
+and the user is instructed to authenticate again using
+\code{\link{do_login}}.
+}
+\examples{
+\dontrun{
+session <- do_login()
+stop_if_invalid_session(session)
+}
+}
+\seealso{
+\code{\link{do_login}}
 }

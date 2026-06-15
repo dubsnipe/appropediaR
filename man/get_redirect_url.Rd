@@ -3,17 +3,31 @@
 \name{get_redirect_url}
 \alias{get_redirect_url}
 \title{sort_redirects.R
-Get the immediate redirect page for a single page.
-This function will follow the immediate redirect to which a page points.
-This helper function is chained by resolve_redirect() to find the final
-page to which a single page points.}
+Get the immediate redirect target for a page}
 \usage{
 get_redirect_url(page_name, api_url = get_appropedia_api_url())
 }
+\arguments{
+\item{page_name}{Character string containing the page title.}
+
+\item{api_url}{Character string containing the MediaWiki API endpoint.}
+}
+\value{
+Character string containing the redirect target if the page is a
+redirect, or \code{NULL} if the page is not a redirect.
+}
 \description{
-sort_redirects.R
-Get the immediate redirect page for a single page.
-This function will follow the immediate redirect to which a page points.
-This helper function is chained by resolve_redirect() to find the final
-page to which a single page points.
+Retrieves the direct redirect target of a page using the MediaWiki API.
+}
+\details{
+This helper function is used by \code{\link{resolve_redirect}} to follow
+redirect chains until a final destination page is reached.
+}
+\examples{
+\dontrun{
+get_redirect_url("Greywater")
+}
+}
+\seealso{
+\code{\link{resolve_redirect}}
 }

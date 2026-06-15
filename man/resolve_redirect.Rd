@@ -2,10 +2,35 @@
 % Please edit documentation in R/redirects.R
 \name{resolve_redirect}
 \alias{resolve_redirect}
-\title{Starting with a page, follow redirects until it finds a page.}
+\title{Resolve the final target of a redirect chain}
 \usage{
 resolve_redirect(page_name, seen = character())
 }
+\arguments{
+\item{page_name}{Character string containing the page title.}
+
+\item{seen}{Internal parameter used for redirect loop detection.}
+}
+\value{
+Character string containing the final page title.
+}
 \description{
-Starting with a page, follow redirects until it finds a page.
+Starting from a page title, follows redirects until a non-redirect page
+is reached.
+}
+\details{
+This function is useful when working with page lists that may contain
+outdated titles or redirects.
+
+Redirect loops are detected automatically and processing stops if a cycle
+is encountered.
+}
+\examples{
+\dontrun{
+resolve_redirect("Greywater")
+}
+}
+\seealso{
+\code{\link{get_redirect_url}},
+\code{\link{apply_redirects}}
 }

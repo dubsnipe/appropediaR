@@ -6,6 +6,14 @@
 \usage{
 do_logout(handle = httr::handle(get_appropedia_api_url()))
 }
+\arguments{
+\item{handle}{The API handle.}
+}
 \description{
 Log out of the API
+}
+\examples{
+\dontrun{
+session <- do_logout()
+}
 }

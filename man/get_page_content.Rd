@@ -3,11 +3,37 @@
 \name{get_page_content}
 \alias{get_page_content}
 \title{read.R
-Read a page's wikitext}
+Retrieve the wikitext of a page}
 \usage{
 get_page_content(page_name, handle = NULL)
 }
+\arguments{
+\item{page_name}{Character string containing the page title.}
+
+\item{handle}{Optional \code{httr} handle used to maintain session state
+across requests.}
+}
+\value{
+Character string containing the page wikitext.
+
+Returns \code{NULL} if the page cannot be retrieved or if no page content
+is available.
+}
 \description{
-read.R
-Read a page's wikitext
+Retrieves the current wikitext content of a page using the MediaWiki API.
+}
+\details{
+This function is commonly used before performing template updates,
+content analysis, or bulk editing operations.
+}
+\examples{
+\dontrun{
+text <- get_page_content("Water")
+
+cat(substr(text, 1, 500))
+}
+}
+\seealso{
+\code{\link{update_template_parameter}},
+\code{\link{appropedia_query}}
 }

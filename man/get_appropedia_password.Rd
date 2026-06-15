@@ -2,10 +2,23 @@
 % Please edit documentation in R/auth.R
 \name{get_appropedia_password}
 \alias{get_appropedia_password}
-\title{Get password from local environment.}
+\title{Get Appropedia password}
 \usage{
 get_appropedia_password()
 }
+\value{
+A character string containing the configured password, or an empty
+string if the environment variable is not set.
+}
 \description{
-Get password from local environment.
+Retrieves the Appropedia password stored in the local environment.
+}
+\details{
+The password is read from the \code{APPROPEDIA_API_PASSWORD}
+environment variable.
+}
+\examples{
+\dontrun{
+get_appropedia_password()
+}
 }

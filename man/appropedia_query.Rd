@@ -2,14 +2,37 @@
 % Please edit documentation in R/helpers.R
 \name{appropedia_query}
 \alias{appropedia_query}
-\title{MediaWiki API query manager
-This function manages a very basic API call and encodes the result as JSON.
-Use this function to perform a query call that doesn't require a CSRF token.}
+\title{Execute a MediaWiki API query}
 \usage{
-appropedia_query(query, handle = NULL, base_url = get_appropedia_api_url())
+appropedia_query(query, handle = NULL)
+}
+\arguments{
+\item{query}{Named list containing MediaWiki API query parameters.}
+
+\item{handle}{Optional \code{httr} handle used to maintain session state
+across requests.}
+}
+\value{
+A parsed JSON object represented as a nested R list.
 }
 \description{
-MediaWiki API query manager
-This function manages a very basic API call and encodes the result as JSON.
-Use this function to perform a query call that doesn't require a CSRF token.
+Performs a MediaWiki API request and returns the parsed JSON response.
+}
+\details{
+This helper function centralizes API communication for read operations that
+do not require a CSRF token.
+}
+\examples{
+\dontrun{
+appropedia_query(
+  list(
+    action = "query",
+    meta = "siteinfo",
+    format = "json"
+  )
+)
+}
+}
+\seealso{
+\code{\link{appropedia_save}}
 }

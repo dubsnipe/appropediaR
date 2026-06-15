@@ -252,7 +252,7 @@ update_template_parameter <- function(
     ))
   }
   
-  save_page(
+  appropedia_save(
     page_name = page_name,
     content = result$content,
     session = session,

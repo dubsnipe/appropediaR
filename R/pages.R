@@ -138,8 +138,9 @@ get_category_pages <- function(
       stop(paste("API error:", dat$error$info))
     }
     
-    # pages <- dat$query$categorymembers$title
-    pages <- subset(dat$query$categorymembers, ns==namespace)[,3]
+    pages <- 
+      dat$query$categorymembers[dat$query$categorymembers$ns == namespace, ] 
+    #  subset(dat$query$categorymembers, ns==namespace)[,3] substituted
     cat_pages <- c(cat_pages, pages)
     
     if (!is.null(dat$continue)) {

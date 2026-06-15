@@ -23,20 +23,23 @@
 get_redirect_url <- function(page_name, 
                              api_url = get_appropedia_api_url()) {
   tryCatch({
-    res <- GET(api_url, query = list(
+    res <- httr::GET(api_url, query = list(
       action = "query",
       prop = "info",
       redirects="",
       titles = page_name,
       format = "json"
-    ), timeout(5))
+    ), httr::timeout(5))
     
-    pages <- content(res, as = "parsed", 
+    pages <- httr::content(res, as = "parsed", 
                      type = "application/json"
     )
     
     if (!is.null(pages$query$redirects[[1]]$to)) {
-      response <- pages$query$redirects[[1]]$to %>% str_replace_all(" ", "_")
+      # response <- 
+        # pages$query$redirects[[1]]$to %>% stringr::str_replace_all(" ", "_")
+      response <- 
+        stringr::str_replace_all(pages$query$redirects[[1]]$to, " ", "_")
       return(response)
     } else {
       return(NULL)  # Explicitly return NULL for missing wikitext
@@ -150,23 +153,23 @@ apply_redirects <- function(names_list,
     
     # Handle empty or NA entries
     if (is.na(names_list[i]) || names_list[i] == "") {
-      cat(" → Empty row, skipping\n")
+      cat(" \u2192 Empty row, skipping\n")
       resolved[i] <- names_list[i]
       next
     }
     
     final_target <- resolve_redirect(names_list[i])
     if (final_target != names_list[i]) {
-      cat(" → Redirect resolved to:", final_target, "\n")
+      cat(" \u2192 Redirect resolved to:", final_target, "\n")
       resolved[i] <- final_target
     } else {
-      cat(" → No redirect\n")
+      cat(" \u2192 No redirect\n")
       resolved[i] <- names_list[i]
     }
     
     next_index <- checkpoint_manager(
       i = i,
-      n = length(names_list),
+      input_size = length(names_list),
       checkpoint_interval = checkpoint_interval,
       checkpoint_file = checkpoint_file,
       state = list(
