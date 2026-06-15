@@ -2,10 +2,10 @@
 % Please edit documentation in R/auth.R
 \name{do_logout}
 \alias{do_logout}
-\title{Logging out of the API}
+\title{Log out of the API}
 \usage{
 do_logout(handle = httr::handle(get_appropedia_api_url()))
 }
 \description{
-Logging out of the API
+Log out of the API
 }

@@ -1,12 +1,37 @@
 #' get_pages.R
 
 
-#' Get a full list of pages on Appropedia.
-#' This function retrieves pages from using a MediaWiki API query.
-#' The retrieved page list will contain redirects. To clean the list, use
-#' apply_redirects().
-get_all_pages <- function(base_url = get_appropedia_api_url(), 
-                          limit = 500, 
+#' Retrieve pages from a MediaWiki namespace
+#'
+#' Retrieves page titles from Appropedia using the MediaWiki
+#' \code{allpages} API query.
+#'
+#' Results are automatically paginated using the API continuation mechanism
+#' until all matching pages have been retrieved.
+#'
+#' @param limit Maximum number of pages requested per API call.
+#' The MediaWiki API may impose its own limits depending on user rights.
+#' @param handle Optional \code{httr} handle used to maintain session state
+#' across requests.
+#' @param namespace Integer namespace identifier. Defaults to \code{0}
+#' (main namespace).
+#'
+#' Use \code{mediawiki_namespaces} to identify namespace numbers.
+#'
+#' @return A character vector containing page titles.
+#'
+#' @seealso
+#' \code{\link{mediawiki_namespaces}}
+#'
+#' @examples
+#' \dontrun{
+#' # Retrieve all pages in the main namespace
+#' pages <- get_all_pages()
+#'
+#' # Retrieve all templates
+#' templates <- get_all_pages(namespace = 10)
+#' }
+get_all_pages <- function(limit = 500, 
                           handle = NULL, 
                           namespace = 0) {
   all_pages <- c()
@@ -20,9 +45,6 @@ get_all_pages <- function(base_url = get_appropedia_api_url(),
       format = "json"
     )
     if (!is.null(cont)) q <- c(q, cont)
-
-    # res <- GET(base_url, query = q, handle = handle)
-    # dat <- fromJSON(content(res, as = "text", encoding = "UTF-8"))
 
     dat <- appropedia_query(
       query = q,
@@ -54,11 +76,39 @@ get_all_pages <- function(base_url = get_appropedia_api_url(),
 }
 
 
-#' Get a list of pages inside a category.
-#' This function will list only from a category.
+#' Retrieve pages from a category
+#'
+#' Retrieves the titles of pages belonging to a specified category using the
+#' MediaWiki API.
+#'
+#' Results are automatically paginated using the API continuation mechanism
+#' until all matching pages have been retrieved.
+#'
+#' @param category Character string containing the category name.
+#' The category name must be stripped of the \code{"Category:"} prefix.
+#' @param limit Maximum number of pages requested per API call.
+#' The MediaWiki API may impose its own limits depending on user rights.
+#' @param handle Optional \code{httr} handle used to maintain session state
+#' across requests.
+#' @param namespace Integer namespace identifier used to filter results.
+#' Defaults to \code{0} (main namespace).
+#'
+#' @return A character vector containing page titles.
+#'
+#' @seealso
+#' \code{\link{get_all_pages}},
+#' \code{\link{mediawiki_namespaces}}
+#'
+#' @examples
+#' \dontrun{
+#' # Retrieve all pages in Category:Water
+#' pages <- get_category_pages("Water")
+#'
+#' # Retrieve all pages in Category:Projects
+#' projects <- get_category_pages("Projects")
+#' }
 get_category_pages <- function(
     category,
-    base_url = get_appropedia_api_url(),
     limit = 500,
     handle = NULL,
     namespace = 0
@@ -79,8 +129,10 @@ get_category_pages <- function(
     
     if (!is.null(cont)) q <- c(q, cont)
     
-    res <- GET(base_url, query = q, handle = handle)
-    dat <- fromJSON(content(res, as = "text", encoding = "UTF-8"))
+    dat <- appropedia_query(
+      q,
+      handle = handle
+    )
     
     if (!is.null(dat$error)) {
       stop(paste("API error:", dat$error$info))

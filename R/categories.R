@@ -1,30 +1,38 @@
-#' get_categories.R
+#' categories.R
 
 
-# get_page_categories <- function(page_name) {
-#   
-#   q <- list(action = "query",
-#     prop = "categories",
-#     titles = page_name,
-#     format = "json"
-#   )
-#   
-#   json_res <- appropedia_query(query = q)
-#   
-#   pages <- json_res$query$pages
-#   page_id <- names(pages)[1]
-#   
-#   if (is.null(pages[[page_id]]$categories)) {
-#     return(
-#       return(character(0))  # no categories
-#     )
-#   }
-#   pages[[page_id]]$categories$title
-# }
-
-
-#' Query the categories for a single page.
-get_page_categories <- function(page_names) {
+#' Retrieve category memberships for one or more pages
+#'
+#' Queries the MediaWiki API and returns the categories assigned to one or more
+#' pages.
+#'
+#' Multiple page titles may be supplied in a single request, allowing category
+#' information to be collected efficiently in batches.
+#'
+#' @param page_names Character vector containing one or more page titles.
+#'
+#' @return A data frame with one row per page-category relationship and the
+#' following columns:
+#' \itemize{
+#'   \item \code{page}: page title.
+#'   \item \code{category}: category name.
+#' }
+#'
+#' Category names are returned without the \code{"Category:"} prefix.
+#'
+#' @seealso
+#' \code{\link{batch_get_page_categories}},
+#' \code{\link{get_pages_from_category}}
+#'
+#' @examples
+#' \dontrun{
+#' get_page_categories("Water")
+#'
+#' get_page_categories(
+#'   c("Water", "Ocean")
+#' )
+#' }
+get_categories_for_pages <- function(page_names) {
   q <- list(action = "query",
             prop = "categories",
             titles = paste(page_names, collapse = "|"),
@@ -62,12 +70,44 @@ get_page_categories <- function(page_names) {
 }
 
 
-#' Collect the categories for a large list of pages.
-collect_page_categories <- function(pages_list,
+#' Retrieve categories for a large list of pages
+#'
+#' Retrieves category memberships for a large collection of pages by querying
+#' the MediaWiki API in batches.
+#'
+#' This function automatically chunks requests, periodically saves progress to
+#' a checkpoint file, and can resume interrupted workflows.
+#'
+#' @param pages_list Character vector containing page titles.
+#' @param force_restart Logical indicating whether an existing checkpoint
+#' should be deleted and processing restarted.
+#' @param checkpoint_file Character string containing the checkpoint filename
+#' or file path.
+#' @param chunk_size Number of page titles to include in each API request.
+#' @param checkpoint_interval Number of chunks processed between checkpoint
+#' saves.
+#' @param delete_temp Logical indicating whether the checkpoint file should be
+#' removed after successful completion.
+#'
+#' @return A data frame with one row per page-category relationship.
+#'
+#' @seealso
+#' \code{\link{get_page_categories}},
+#' \code{\link{checkpoint_manager}},
+#' \code{\link{load_checkpoint}}
+#'
+#' @examples
+#' \dontrun{
+#' categories <- batch_get_page_categories(
+#'   pages_list = get_all_pages()
+#' )
+#' }
+batch_get_page_categories <- function(pages_list,
                             force_restart = FALSE,
                             checkpoint_file = "categories_checkpoint.rds",
                             chunk_size = 50,
-                            checkpoint_interval = 10) {
+                            checkpoint_interval = 10,
+                            delete_temp = TRUE) {
   
   
   chunked_pages_list <- split(pages_list, ceiling(seq_along(pages_list)/chunk_size))
@@ -80,6 +120,11 @@ collect_page_categories <- function(pages_list,
       next_index = 1
     )
   )
+  validate_checkpoint_structure(checkpoint, c("categories_batch", "next_index"))
+  validate_checkpoint_length(checkpoint, 
+                             current_length = length(pages_list),
+                             checkpoint_file)
+  
   categories_batch <- checkpoint$categories_batch
   start_i <- checkpoint$next_index
   
@@ -98,17 +143,41 @@ collect_page_categories <- function(pages_list,
       n = length(chunked_pages_list),
       checkpoint_interval = checkpoint_interval,
       checkpoint_file = checkpoint_file,
-      state = list(categories_batch = categories_batch)
+      state = list(
+        categories_batch = categories_batch,
+        input_length = n
+      )
     )
   }
+  
+  cleanup_checkpoint(delete_temp, checkpoint_file)
   
   # flatten result if needed
   do.call(rbind, categories_batch)
 }
 
 
-
-count_category_pages <- function(
+#' Count pages in a category
+#'
+#' Counts the number of pages belonging to a category using the MediaWiki API.
+#'
+#' This function can be useful for estimating workflow size before retrieving
+#' page metadata or category memberships.
+#'
+#' @param category Character string containing the category name.
+#' The \code{"Category:"} prefix is not required.
+#' @param limit Maximum number of category members requested per API call.
+#'
+#' @return Integer containing the number of pages found in the category.
+#'
+#' @seealso
+#' \code{\link{get_category_pages}}
+#'
+#' @examples
+#' \dontrun{
+#' count_pages_in_category("Water")
+#' } 
+count_pages_in_category <- function(
     category,
     limit = 500
 ) {
@@ -155,8 +224,29 @@ count_category_pages <- function(
 }
 
 
-
-get_category_pages <- function(category,
+#' Retrieve pages belonging to a category
+#'
+#' Retrieves the titles of pages belonging to a specified category using the
+#' MediaWiki API.
+#'
+#' Results are automatically paginated until all category members have been
+#' retrieved.
+#'
+#' @param category Character string containing the category name.
+#' The \code{"Category:"} prefix is optional.
+#' @param limit Maximum number of pages requested per API call.
+#'
+#' @return Character vector containing page titles.
+#'
+#' @seealso
+#' \code{\link{get_page_categories}},
+#' \code{\link{count_pages_in_category}}
+#'
+#' @examples
+#' \dontrun{
+#' pages <- get_pages_from_category("Water")
+#' }
+get_pages_from_category <- function(category,
                                limit = 500,
                                base_url = get_appropedia_api_url()) {
   
@@ -186,7 +276,7 @@ get_category_pages <- function(category,
       all_pages <- c(all_pages, pages$title)
     }
     
-    cat("Fetched", length(pages), "pages | total:", length(all_pages), "\n")
+    cat("Fetched total:", length(all_pages), "\n")
     
     if (!is.null(data$continue$cmcontinue)) {
       cmcontinue <- data$continue$cmcontinue
@@ -198,90 +288,5 @@ get_category_pages <- function(category,
   return(all_pages)
 }
 
-# collect_all_categories <- function(pages_list,
-#                                    start = 1,
-#                                    end = length(pages_list),
-#                                    save_path = "categories_temp.rds",
-#                                    automatic = TRUE) {
-# 
-#   # Load existing progress if file exists
-#   if (file.exists(save_path)) {
-#     all_categories <- readRDS(save_path)
-# 
-#     if (automatic) {
-#       # Resume from the first unprocessed page
-#       start <- sum(!vapply(all_categories, is.null, logical(1))) + 1
-#     }
-#     cat("Resuming from row", start, "\n")
-#   } else {
-#     all_categories <- vector("list", length(pages_list)) # preallocate cleanly
-#   }
-# 
-#   for (i in start:end) {
-#     page_name <- pages_list[i]
-#     cat(i, "-", page_name, "\n")
-# 
-#     page_categories <- get_all_page_categories(page_name)
-# 
-#     if (is.null(page_categories)) {
-#       cat("Skipping:", page_name, "(No useful API response)\n")
-#       all_categories[[i]] <- ""   # explicitly set empty string
-#     } else {
-#       page_categories_text <- paste(unlist(page_categories), collapse = ", ")
-#       all_categories[[i]] <- page_categories_text
-#     }
-# 
-#     if (i %% 100 == 0 || i == end) {
-#       saveRDS(all_categories, save_path)
-#     }
-#   }
-# 
-#   # Return named vector: categories aligned with pages
-#   tabulated_categories <- unlist(all_categories, use.names = FALSE)
-#   names(tabulated_categories) <- pages_list
-#   return(tabulated_categories)
-# }
-# 
-
-# Scrape categories from the wikitext of a single page
-# More expensive approach
-# scrape_page_categories <- function(page){
-#   tryCatch({
-#     page_content <- get_page_content(page)
-#   },
-#   error=function(e) {
-#     message('An Error Occurred')
-#   }
-#   )
-#   if (is.null(page_content)) {
-#     cat("Skipping:", page_name, "(No useful API response)\n")
-#     return(NA)
-#   }else{
-#     raw_cats <-  page_content %>% str_extract_all("\\[\\[Category\\:(.+?)\\]\\]")
-#     raw_cats <-
-#       raw_cats %>%
-#       lapply(FUN = function(x)
-#         str_remove_all(x, pattern = "\\[\\[")) %>%
-#       lapply(FUN = function(x)
-#         str_remove_all(x, pattern = "\\]\\]"))
-#     return(raw_cats)
-#   }
-# }
-# # Go through a list and collect all categories
-# all_scraped_categories <- function(pages_list, start = 1, end = nrow(pages_list)) {
-#   for (i in start:end) {
-#     cat(i, " - ")
-#     page_name <- pages_list[i]
-#     page_categories <- scrape_page_categories(page_name)
-# 
-#     if (is.null(page_categories)) {
-#       cat("Skipping:", page_name, "(No useful API response)\n")
-#       next
-#     }
-#     page_categories_text <- paste(unlist(page_categories), collapse = ", ")
-#     all_categories[i] <- page_categories_text
-#   }
-#   return(all_categories)
-# }
 
 

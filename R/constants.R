@@ -1,7 +1,23 @@
 #' constants.R
 
-#' Table with the names of mediawiki namespaces
-#' See https://www.mediawiki.org/wiki/Manual:Namespace_constants
+#' MediaWiki namespace definitions
+#'
+#' Lookup table containing MediaWiki namespace IDs and their corresponding
+#' names.
+#'
+#' See:
+#' https://www.mediawiki.org/wiki/Manual:Namespace_constants
+#'
+#' @format A data frame with two columns:
+#' \describe{
+#' \item{number}{Integer namespace identifier.}
+#' \item{name}{Namespace name.}
+#' }
+#'
+#' @source MediaWiki namespace constants.
+#' @examples
+#' mediawiki_namespaces
+"mediawiki_namespaces"
 mediawiki_namespaces <- data.frame(number = 0:15, name = c("",
                                                  "Talk",
                                                  "User",
@@ -19,7 +35,25 @@ mediawiki_namespaces <- data.frame(number = 0:15, name = c("",
                                                  "Category",
                                                  "Category_talk"))
 
-#' Schema definition based on Special:Properties
+#' Semantic MediaWiki property schema
+#'
+#' Named character vector mapping Appropedia Semantic MediaWiki property names
+#' to standardized column names used by the package.
+#'
+#' This object defines the schema used when retrieving semantic metadata with
+#' functions such as \code{get_semantic_properties()}.
+#'
+#' The names of the vector correspond to output column names, while the values
+#' correspond to Semantic MediaWiki property names on the wiki.
+#'
+#' @format A named character vector.
+#'
+#' @source Appropedia Special:Properties.
+#'
+#' @examples
+#' property_map["Page_title"]
+#' names(property_map)
+"property_map"
 property_map <- c(
   Device_hardware_license = "Device hardware license",
   Device_software_license = "Device software license",

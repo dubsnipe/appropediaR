@@ -1,6 +1,30 @@
 #' metadata.R
 
-#' Single interface to SMW API
+
+#' Execute a Semantic MediaWiki query
+#'
+#' Sends a Semantic MediaWiki ask query through the MediaWiki API and returns
+#' the parsed result.
+#'
+#' This function is a lightweight wrapper around the Semantic MediaWiki
+#' \code{action=ask} API endpoint.
+#'
+#' @param query Character string containing a Semantic MediaWiki ask query.
+#' @param handle Optional \code{httr} handle used to maintain session state
+#' across requests.
+#'
+#' @return Parsed Semantic MediaWiki API response as a nested R list.
+#'
+#' @seealso
+#' \code{\link{parse_smw_result}},
+#' \code{\link{get_semantic_properties}}
+#'
+#' @examples
+#' \dontrun{
+#' get_semantic_query(
+#'   "[[Category:Water]]|?Page title"
+#' )
+#' }
 get_semantic_query <- function(query, handle = NULL) {
   q <- list(
     action = "ask",
@@ -10,6 +34,39 @@ get_semantic_query <- function(query, handle = NULL) {
   appropedia_query(q, handle)
 }
 
+
+#' Parse a Semantic MediaWiki result
+#'
+#' Converts a single Semantic MediaWiki result into a standardized tabular
+#' format based on a property map.
+#'
+#' This function extracts values from Semantic MediaWiki printouts and maps
+#' them to a predefined schema, ensuring that all expected columns are present
+#' even when a page does not contain every property.
+#'
+#' Property values are normalized using
+#' \code{\link{flatten_smw_value}}.
+#'
+#' @param page_result A single page result from a Semantic MediaWiki
+#' \code{action=ask} query.
+#' @param property_map Named character vector mapping output column names to
+#' Semantic MediaWiki property names.
+#'
+#' @return A one-row data frame containing the parsed page metadata.
+#'
+#' @seealso
+#' \code{\link{flatten_smw_value}},
+#' \code{\link{get_semantic_query}}
+#'
+#' @examples
+#' \dontrun{
+#' page <- smw_response$query$results[[1]]
+#'
+#' parse_smw_result(
+#'   page_result = page,
+#'   property_map = property_map
+#' )
+#' }
 parse_smw_result <- function(page_result, property_map) {
   
   # start from full schema (ensures all NA columns exist)
@@ -33,8 +90,44 @@ parse_smw_result <- function(page_result, property_map) {
 }
 
 
-#' Flatten a Semantic MediaWiki result.
-#' This function normalizes SMW return types
+#' Normalize a Semantic MediaWiki value
+#'
+#' Converts Semantic MediaWiki values into a consistent format suitable for
+#' tabular storage and analysis.
+#'
+#' This helper handles common Semantic MediaWiki return types including page
+#' references, dates, coordinates, quantities, booleans, and text values.
+#'
+#' Multiple values are concatenated using a semicolon separator.
+#'
+#' @param x A value returned by a Semantic MediaWiki printout.
+#'
+#' @return A normalized value suitable for inclusion in a data frame.
+#' Most values are returned as character strings.
+#'
+#' @details
+#' Supported Semantic MediaWiki value types include:
+#' \itemize{
+#'   \item Page references
+#'   \item Dates and timestamps
+#'   \item Coordinates
+#'   \item Quantities and units
+#'   \item Boolean values
+#'   \item Wikitext links
+#'   \item Plain text values
+#' }
+#'
+#' Empty values are returned as \code{NA_character_}.
+#'
+#' @seealso
+#' \code{\link{parse_smw_result}}
+#'
+#' @examples
+#' \dontrun{
+#' flatten_smw_value(
+#'   list("Water", "Sanitation")
+#' )
+#' }
 flatten_smw_value <- function(x) {
   
   # empty
@@ -103,7 +196,56 @@ flatten_smw_value <- function(x) {
 }
 
 
-#' Collect semantic properties for a list of pages.
+#' Retrieve semantic properties for a collection of pages
+#'
+#' Collects Semantic MediaWiki properties for a large list of pages.
+#'
+#' Pages are queried in batches and results are converted into a standardized
+#' tabular structure using the supplied property map.
+#'
+#' Progress is periodically saved to a checkpoint file so that interrupted
+#' workflows can be resumed without restarting from the beginning.
+#'
+#' @param pages_list Character vector containing page titles.
+#' @param property_map Named character vector mapping output column names to
+#' Semantic MediaWiki property names.
+#' @param handle Optional \code{httr} handle used to maintain session state
+#' across requests.
+#' @param force_restart Logical indicating whether an existing checkpoint
+#' should be deleted and processing restarted.
+#' @param checkpoint_file Character string containing the checkpoint filename
+#' or file path.
+#' @param chunk_size Number of pages included in each Semantic MediaWiki query.
+#' @param checkpoint_interval Number of chunks processed between checkpoint
+#' saves.
+#'
+#' @return A data frame containing one row per page and one column per property
+#' defined in \code{property_map}.
+#'
+#' @details
+#' This function is designed for large-scale metadata extraction workflows.
+#'
+#' The output schema is determined by \code{property_map}, ensuring that the
+#' same columns are returned even when pages contain different subsets of
+#' properties.
+#'
+#' Checkpoints are automatically cleaned up after successful completion unless
+#' processing is interrupted.
+#'
+#' @seealso
+#' \code{\link{get_semantic_query}},
+#' \code{\link{parse_smw_result}},
+#' \code{\link{property_map}}
+#'
+#' @examples
+#' \dontrun{
+#' pages <- get_pages_from_category("Water")
+#'
+#' metadata <- get_semantic_properties(
+#'   pages_list = pages,
+#'   property_map = property_map
+#' )
+#' }
 get_semantic_properties <- function(
     pages_list,
     property_map,

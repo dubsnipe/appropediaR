@@ -1,10 +1,25 @@
 #' sort_redirects.R
 
 
-#' Get the immediate redirect page for a single page.
-#' This function will follow the immediate redirect to which a page points.
-#' This helper function is chained by resolve_redirect() to find the final
-#' page to which a single page points.
+#' Get the immediate redirect target for a page
+#'
+#' Retrieves the direct redirect target of a page using the MediaWiki API.
+#'
+#' This helper function is used by \code{\link{resolve_redirect}} to follow
+#' redirect chains until a final destination page is reached.
+#'
+#' @param page_name Character string containing the page title.
+#' @param api_url Character string containing the MediaWiki API endpoint.
+#'
+#' @return Character string containing the redirect target if the page is a
+#' redirect, or \code{NULL} if the page is not a redirect.
+#'
+#' @seealso \code{\link{resolve_redirect}}
+#'
+#' @examples
+#' \dontrun{
+#' get_redirect_url("Greywater")
+#' }
 get_redirect_url <- function(page_name, 
                              api_url = get_appropedia_api_url()) {
   tryCatch({
@@ -30,8 +45,30 @@ get_redirect_url <- function(page_name,
 }
 
 
-#' Starting with a page, follow redirects until it finds a page.
-#' 
+#' Resolve the final target of a redirect chain
+#'
+#' Starting from a page title, follows redirects until a non-redirect page
+#' is reached.
+#'
+#' This function is useful when working with page lists that may contain
+#' outdated titles or redirects.
+#'
+#' Redirect loops are detected automatically and processing stops if a cycle
+#' is encountered.
+#'
+#' @param page_name Character string containing the page title.
+#' @param seen Internal parameter used for redirect loop detection.
+#'
+#' @return Character string containing the final page title.
+#'
+#' @seealso
+#' \code{\link{get_redirect_url}},
+#' \code{\link{apply_redirects}}
+#'
+#' @examples
+#' \dontrun{
+#' resolve_redirect("Greywater")
+#' }
 resolve_redirect <- function(page_name, seen = character()) {
   
   # Prevent infinite loops if there's a redirect cycle
@@ -51,22 +88,59 @@ resolve_redirect <- function(page_name, seen = character()) {
 }
 
 
-#' Resolve redirects for a list of pages.
-#' Use this function to clean a pages list. This function stores a 
+#' Resolve redirects for a list of pages
+#'
+#' Resolves redirects for an entire vector of page titles.
+#'
+#' This function is useful for cleaning page lists before performing metadata
+#' extraction, category analysis, or bulk editing operations.
+#'
+#' Progress is periodically saved to a checkpoint file so that interrupted
+#' workflows can be resumed without restarting from the beginning.
+#'
+#' This function preserves the original vector order.
+#'
+#' @param names_list Character vector containing page titles.
+#' @param force_restart Logical indicating whether an existing checkpoint
+#' should be deleted and processing restarted from the beginning.
+#' @param checkpoint_file Character string containing the checkpoint filename
+#' or file path.
+#' @param checkpoint_interval Number of pages processed between checkpoint
+#' saves.
+#'
+#' @return Character vector containing the resolved page titles.
+#'
+#' @seealso
+#' \code{\link{resolve_redirect}},
+#' \code{\link{load_checkpoint}},
+#' \code{\link{checkpoint_manager}}
+#'
+#' @examples
+#' \dontrun{
+#' pages <- c(
+#'   "Greywater",
+#'   "Composting toilet"
+#' )
+#'
+#' resolved_pages <- apply_redirects(pages)
+#' }
 apply_redirects <- function(names_list,
                             force_restart = FALSE,
                             checkpoint_file = "redirects_checkpoint.rds",
                             checkpoint_interval = 100) {
   
-  
   checkpoint <- load_checkpoint(
     checkpoint_file,
     force_restart,
-    default_value = list(
-      resolved = character(length(names_list)),
-      next_index = 1
-    )
+    default_value = 
+      list(resolved = character(length(names_list)), 
+           next_index = 1
+           )
   )
+  validate_checkpoint_structure(checkpoint, c("resolved", "next_index"))
+  validate_checkpoint_length(checkpoint, 
+                             current_length = length(names_list),
+                             checkpoint_file)
   
   resolved <- checkpoint$resolved
   start_i <- checkpoint$next_index
@@ -95,11 +169,15 @@ apply_redirects <- function(names_list,
       n = length(names_list),
       checkpoint_interval = checkpoint_interval,
       checkpoint_file = checkpoint_file,
-      state = list(resolved = resolved)
+      state = list(
+        resolved = resolved,
+        input_length = length(names_list)
+        )
     )
   }
   
-  cat("Redirect resolution complete. Total rows processed:", length(names_list), "\n")
-  cat("Original pages list size:", length(names_list), "\n")
+  cleanup_checkpoint(checkpoint_file)
+  message("Redirect resolution complete. Total rows processed: ", length(names_list), "\n")
+  # cat("Original pages list size:", length(names_list), "\n")
   return(resolved)
 }

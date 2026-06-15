@@ -1,27 +1,29 @@
 Package: appropedia
 Type: Package
-Title: Appropedia helper functions
+Title: Tools for Interacting with Appropedia
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Emilio", "Velis",
-      email = "emilio.velis@appropedia.org",
+      "Emilio",
+      "Velis",
+      email = "",
       role = c("aut", "cre")
-    )
-  )
-Description: This package contains useful functions for Appropedia's management.
-    It includes tools to obtain page informataion, interact with the API,
-    download materials and edit the wiki if needed.
+  ))
+Description: Tools for interacting with Appropedia through the MediaWiki
+    and Semantic MediaWiki APIs. The package includes functions to retrieve
+    page content, categories, and semantic properties; resolve redirects;
+    manage authenticated sessions; edit template parameters; and run
+    large batch workflows with checkpointing support.
 License: CC0
 Encoding: UTF-8
 LazyData: true
 Imports:
-    dplyr
-Suggests:
+    dplyr,
     httr,
-    readr,
-    stringr,
-    lubridate,
     jsonlite
+Suggests:
+    lubridate,
+    readr,
+    stringr
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.0.0

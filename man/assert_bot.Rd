@@ -2,10 +2,10 @@
 % Please edit documentation in R/auth.R
 \name{assert_bot}
 \alias{assert_bot}
-\title{Test the identity of a bot}
+\title{Test the identity of a bot. Debugging function.}
 \usage{
 assert_bot(handle = httr::handle(get_appropedia_api_url()))
 }
 \description{
-Debug
+Test the identity of a bot. Debugging function.
 }
