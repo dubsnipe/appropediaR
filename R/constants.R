@@ -5,8 +5,6 @@
 #' Lookup table containing MediaWiki namespace IDs and their corresponding
 #' names.
 #'
-#' See:
-#' https://www.mediawiki.org/wiki/Manual:Namespace_constants
 #'
 #' @format A data frame with two columns:
 #' \describe{
@@ -14,7 +12,8 @@
 #' \item{name}{Namespace name.}
 #' }
 #'
-#' @source MediaWiki namespace constants.
+#' @source MediaWiki namespace constants: 
+#' https://www.mediawiki.org/wiki/Manual:Namespace_constants
 #' @examples
 #'\dontrun{
 #' mediawiki_namespaces

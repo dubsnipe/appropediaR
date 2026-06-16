@@ -35,6 +35,10 @@
 #' }
 modify_template <- function(content, new_value, template_name, param_name) {
   
+  if (is.null(content) || length(content) == 0) {
+    stop("content is NULL or empty")
+  }
+  
   original_content <- content
   
   # Escape template name for regex

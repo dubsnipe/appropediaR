@@ -12,7 +12,8 @@ A data frame with two columns:
 }
 }
 \source{
-MediaWiki namespace constants.
+MediaWiki namespace constants:
+https://www.mediawiki.org/wiki/Manual:Namespace_constants
 }
 \usage{
 mediawiki_namespaces
@@ -20,10 +21,6 @@ mediawiki_namespaces
 \description{
 Lookup table containing MediaWiki namespace IDs and their corresponding
 names.
-}
-\details{
-See:
-https://www.mediawiki.org/wiki/Manual:Namespace_constants
 }
 \examples{
 \dontrun{

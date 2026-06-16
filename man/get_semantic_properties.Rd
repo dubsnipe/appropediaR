@@ -10,7 +10,7 @@ get_semantic_properties(
   handle = NULL,
   force_restart = FALSE,
   checkpoint_file = "semantic_properties_checkpoint.rds",
-  chunk_size = 20,
+  chunk_size = 10,
   checkpoint_interval = 5
 )
 }

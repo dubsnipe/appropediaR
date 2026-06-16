@@ -70,7 +70,7 @@ get_page_content <- function(
     return(NULL)
   }
   
-  # revisions$slots$main$`*`[1]
-  revisions[[1]]$slots$main$`*`
+  revisions$slots$main$`*`[1]
+  # revisions[[1]]$slots$main$`*`
 }
 
