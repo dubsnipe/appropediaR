@@ -247,7 +247,9 @@ resolve_checkpoint_path <- function(checkpoint_file) {
 #' should be deleted and the workflow restarted.
 #' @param default_value Object returned when no checkpoint exists or when
 #' restarting.
-#'
+#' @param input_length Optional integer indicating the size of the current
+#' input being processed. When provided, the checkpoint is validated to
+#' ensure it was created from an input of the same length.#'
 #' @return The checkpoint object or \code{default_value}.
 #'
 #' @seealso
@@ -265,9 +267,11 @@ resolve_checkpoint_path <- function(checkpoint_file) {
 #'   )
 #' )
 #' }
-load_checkpoint <- function(checkpoint_file, 
-                            force_restart = FALSE, 
-                            default_value = NULL) {
+load_checkpoint <- function(checkpoint_file,
+                            force_restart = FALSE,
+                            default_value,
+                            input_length = NULL
+                            ) {
   
   resolved_checkpoint_file <- resolve_checkpoint_path(checkpoint_file)
   
@@ -277,11 +281,25 @@ load_checkpoint <- function(checkpoint_file,
   }
   
   if (file.exists(resolved_checkpoint_file)) {
-    return(readRDS(resolved_checkpoint_file))
+    
+    checkpoint <- readRDS(resolved_checkpoint_file)
+    
+    validate_checkpoint_structure(checkpoint, 
+                                  names(default_value), 
+                                  checkpoint_file)
+    
+    if (!is.null(input_length)) {
+      validate_checkpoint_length(checkpoint, input_length, checkpoint_file)
+    }
+    
+    return(checkpoint)
+  } else {
+    
+    checkpoint <- default_value
+    
   }
   
-  
-  default_value
+  checkpoint
 }
 
 
@@ -312,7 +330,7 @@ validate_checkpoint_structure <- function(
     required_fields,
     checkpoint_file
 ) {
-  
+  message("Structure validator called.")
   missing <- setdiff(
     required_fields,
     names(checkpoint)
@@ -330,7 +348,7 @@ validate_checkpoint_structure <- function(
       call. = FALSE
     )
   }
-  
+  message("Validation done.")
   invisible(TRUE)
 }
 

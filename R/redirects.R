@@ -135,15 +135,12 @@ apply_redirects <- function(names_list,
   checkpoint <- load_checkpoint(
     checkpoint_file,
     force_restart,
-    default_value = 
-      list(resolved = character(length(names_list)), 
-           next_index = 1
-           )
+    default_value = list(
+      resolved = character(length(names_list)), 
+      next_index = 1
+    ),
+    input_length = length(names_list)
   )
-  validate_checkpoint_structure(checkpoint, c("resolved", "next_index"))
-  validate_checkpoint_length(checkpoint, 
-                             current_length = length(names_list),
-                             checkpoint_file)
   
   resolved <- checkpoint$resolved
   start_i <- checkpoint$next_index

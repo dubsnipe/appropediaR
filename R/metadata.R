@@ -252,7 +252,7 @@ get_semantic_properties <- function(
     handle = NULL,
     force_restart = FALSE,
     checkpoint_file = "semantic_properties_checkpoint.rds",
-    chunk_size = 20,
+    chunk_size = 10,
     checkpoint_interval = 5
 ) {
   
@@ -265,11 +265,16 @@ get_semantic_properties <- function(
     checkpoint_file,
     force_restart,
     default_value = list(
-      results_batch = vector("list", length(chunked_pages_list)),
+      results_batch = vector(
+        "list", 
+        length(chunked_pages_list)
+      ),
       next_index = 1
-    )
+    ),
+    input_length = length(pages_list)
   )
-  
+
+
   results_batch <- checkpoint$results_batch
   start_i <- checkpoint$next_index
   

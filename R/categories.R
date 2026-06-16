@@ -117,14 +117,14 @@ batch_get_page_categories <- function(pages_list,
     checkpoint_file,
     force_restart,
     default_value = list(
-      categories_batch = vector("list", length(chunked_pages_list)),
+      categories_batch = vector(
+        "list", 
+        length(chunked_pages_list)
+        ),
       next_index = 1
-    )
+    ),
+    input_length = length(pages_list)
   )
-  validate_checkpoint_structure(checkpoint, c("categories_batch", "next_index"))
-  validate_checkpoint_length(checkpoint, 
-                             current_length = length(pages_list),
-                             checkpoint_file)
   
   categories_batch <- checkpoint$categories_batch
   start_i <- checkpoint$next_index
@@ -236,6 +236,7 @@ count_pages_in_category <- function(
 #' @param category Character string containing the category name.
 #' The \code{"Category:"} prefix is optional.
 #' @param limit Maximum number of pages requested per API call.
+#' @param namespace Namespace in numeric representation. 
 #'
 #' @return Character vector containing page titles.
 #'
@@ -247,10 +248,13 @@ count_pages_in_category <- function(
 #' \dontrun{
 #' pages <- get_pages_from_category("Water")
 #' }
-get_pages_from_category <- function(category, limit = 500) {
+get_pages_from_category <- function(category, 
+                                    limit = 500,
+                                    namespace = 0) {
   
   all_pages <- character()
   cmcontinue <- NULL
+  cmnamespace <- paste(namespace, collapse = "|")
   
   repeat {
     query <- list(
@@ -258,6 +262,7 @@ get_pages_from_category <- function(category, limit = 500) {
       list = "categorymembers",
       cmtitle = paste0("Category:", category),
       cmlimit = limit,
+      cmnamespace = cmnamespace,
       format = "json"
     )
     

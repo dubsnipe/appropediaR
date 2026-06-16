@@ -4,7 +4,12 @@
 \alias{load_checkpoint}
 \title{Load a checkpoint file}
 \usage{
-load_checkpoint(checkpoint_file, force_restart = FALSE, default_value = NULL)
+load_checkpoint(
+  checkpoint_file,
+  force_restart = FALSE,
+  default_value,
+  input_length = NULL
+)
 }
 \arguments{
 \item{checkpoint_file}{Character string containing the checkpoint filename
@@ -15,6 +20,10 @@ should be deleted and the workflow restarted.}
 
 \item{default_value}{Object returned when no checkpoint exists or when
 restarting.}
+
+\item{input_length}{Optional integer indicating the size of the current
+input being processed. When provided, the checkpoint is validated to
+ensure it was created from an input of the same length.#'}
 }
 \value{
 The checkpoint object or \code{default_value}.
