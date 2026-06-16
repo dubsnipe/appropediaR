@@ -20,7 +20,7 @@
 #' \dontrun{
 #' get_redirect_url("Greywater")
 #' }
-get_redirect_url <- function(page_name, 
+get_redirect_url <- function(page_name,
                              api_url = get_appropedia_api_url()) {
   tryCatch({
     res <- httr::GET(api_url, query = list(
@@ -30,15 +30,13 @@ get_redirect_url <- function(page_name,
       titles = page_name,
       format = "json"
     ), httr::timeout(5))
-    
-    pages <- httr::content(res, as = "parsed", 
+
+    pages <- httr::content(res, as = "parsed",
                      type = "application/json"
     )
-    
+
     if (!is.null(pages$query$redirects[[1]]$to)) {
-      # response <- 
-        # pages$query$redirects[[1]]$to %>% stringr::str_replace_all(" ", "_")
-      response <- 
+      response <-
         stringr::str_replace_all(pages$query$redirects[[1]]$to, " ", "_")
       return(response)
     } else {
@@ -72,21 +70,23 @@ get_redirect_url <- function(page_name,
 #' \dontrun{
 #' resolve_redirect("Greywater")
 #' }
+#'
+#' @export
 resolve_redirect <- function(page_name, seen = character()) {
-  
+
   # Prevent infinite loops if there's a redirect cycle
   if (page_name %in% seen) {
     return(page_name)
   }
-  
+
   redirect_url <- get_redirect_url(page_name)
-  
+
   if (!is.null(redirect_url) && nchar(redirect_url) > 0) {
     # Follow the redirect recursively
     return(resolve_redirect(redirect_url, c(seen, page_name)))
   } else {
     # No redirect, return final destination
-    return(page_name)  
+    return(page_name)
   }
 }
 
@@ -127,34 +127,36 @@ resolve_redirect <- function(page_name, seen = character()) {
 #'
 #' resolved_pages <- apply_redirects(pages)
 #' }
+#'
+#' @export
 apply_redirects <- function(names_list,
                             force_restart = FALSE,
                             checkpoint_file = "redirects_checkpoint.rds",
                             checkpoint_interval = 100) {
-  
+
   checkpoint <- load_checkpoint(
     checkpoint_file,
     force_restart,
     default_value = list(
-      resolved = character(length(names_list)), 
+      resolved = character(length(names_list)),
       next_index = 1
     ),
     input_length = length(names_list)
   )
-  
+
   resolved <- checkpoint$resolved
   start_i <- checkpoint$next_index
-  
+
   for (i in start_i:length(names_list)) {
     cat("Resolving redirects for row", i, ":", names_list[i], "\n")
-    
+
     # Handle empty or NA entries
     if (is.na(names_list[i]) || names_list[i] == "") {
       cat(" \u2192 Empty row, skipping\n")
       resolved[i] <- names_list[i]
       next
     }
-    
+
     final_target <- resolve_redirect(names_list[i])
     if (final_target != names_list[i]) {
       cat(" \u2192 Redirect resolved to:", final_target, "\n")
@@ -163,7 +165,7 @@ apply_redirects <- function(names_list,
       cat(" \u2192 No redirect\n")
       resolved[i] <- names_list[i]
     }
-    
+
     next_index <- checkpoint_manager(
       i = i,
       input_size = length(names_list),
@@ -175,7 +177,7 @@ apply_redirects <- function(names_list,
         )
     )
   }
-  
+
   cleanup_checkpoint(checkpoint_file)
   message("Redirect resolution complete. Total rows processed: ", length(names_list), "\n")
   # cat("Original pages list size:", length(names_list), "\n")

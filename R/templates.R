@@ -33,33 +33,35 @@
 #'   param_name = "description"
 #' )
 #' }
+#'
+#' @export
 modify_template <- function(content, new_value, template_name, param_name) {
-  
+
   if (is.null(content) || length(content) == 0) {
     stop("content is NULL or empty")
   }
-  
+
   original_content <- content
-  
+
   # Escape template name for regex
   template_esc <- gsub(
     "([.|()\\^{}+$*?]|\\[|\\])",
     "\\\\\\1",
     template_name
   )
-  
+
   # Check whether the template exists
   template_pattern <- paste0(
     "\\{\\{",
     template_esc
   )
-  
+
   template_found <- grepl(
     template_pattern,
     content,
     perl = TRUE
   )
-  
+
   if (!template_found) {
     return(list(
       content = original_content,
@@ -69,7 +71,7 @@ modify_template <- function(content, new_value, template_name, param_name) {
       changed = FALSE
     ))
   }
-  
+
   # Pattern: match the template and the parameter
   pattern <- paste0(
     "(\\{\\{",
@@ -78,13 +80,13 @@ modify_template <- function(content, new_value, template_name, param_name) {
     param_name,
     "\\s*=\\s*([^|}]*)"
   )
-  
+
   parameter_found <- grepl(
     pattern,
     content,
     perl = TRUE
   )
-  
+
   if (parameter_found) {
     # Parameter exists: replace its value
     content <- gsub(
@@ -99,9 +101,9 @@ modify_template <- function(content, new_value, template_name, param_name) {
       content,
       perl = TRUE
     )
-    
+
     parameter_added <- FALSE
-    
+
   } else {
     # Parameter doesn't exist: insert it before the closing of the first matching template
     insert_pattern <- paste0(
@@ -109,7 +111,7 @@ modify_template <- function(content, new_value, template_name, param_name) {
       template_esc,
       "[^}]*?)}}"
     )
-    
+
     content <- gsub(
       insert_pattern,
       paste0(
@@ -122,10 +124,10 @@ modify_template <- function(content, new_value, template_name, param_name) {
       content,
       perl = TRUE
     )
-    
+
     parameter_added <- TRUE
   }
-  
+
   list(
     content = content,
     template_found = TRUE,
@@ -183,6 +185,8 @@ modify_template <- function(content, new_value, template_name, param_name) {
 #'   session = session
 #' )
 #' }
+#'
+#' @export
 update_template_parameter <- function(
     page_name,
     template_name,
@@ -192,9 +196,9 @@ update_template_parameter <- function(
     dry_run = FALSE,
     report = T
 ) {
-  
+
   content <- get_page_content(page_name)
-  
+
   if (is.null(content)) {
     return(list(
       page = page_name,
@@ -207,14 +211,14 @@ update_template_parameter <- function(
       )
     ))
   }
-  
+
   result <- modify_template(
     content = content,
     new_value = new_value,
     template_name = template_name,
     param_name = param_name
   )
-  
+
   if (!result$template_found) {
     return(list(
       page = page_name,
@@ -227,7 +231,7 @@ update_template_parameter <- function(
       )
     ))
   }
-  
+
   if (!result$changed) {
     return(list(
       page = page_name,
@@ -240,7 +244,7 @@ update_template_parameter <- function(
       )
     ))
   }
-  
+
   if (dry_run) {
     return(list(
       page = page_name,
@@ -255,7 +259,7 @@ update_template_parameter <- function(
       )
     ))
   }
-  
+
   appropedia_save(
     page_name = page_name,
     content = result$content,
@@ -267,7 +271,7 @@ update_template_parameter <- function(
       template_name
     )
   )
-  
+
   list(
     page = page_name,
     success = TRUE,

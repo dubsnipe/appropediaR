@@ -12,7 +12,7 @@
 #' \item{name}{Namespace name.}
 #' }
 #'
-#' @source MediaWiki namespace constants: 
+#' @source MediaWiki namespace constants:
 #' https://www.mediawiki.org/wiki/Manual:Namespace_constants
 #' @examples
 #'\dontrun{
@@ -55,6 +55,8 @@ mediawiki_namespaces <- data.frame(number = 0:15, name = c("",
 #' property_map["Page_title"]
 #' names(property_map)
 #' }
+#'
+#' @export
 property_map <- c(
   Device_hardware_license = "Device hardware license",
   Device_software_license = "Device software license",

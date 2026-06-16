@@ -31,8 +31,10 @@
 #' # Retrieve all templates
 #' templates <- get_all_pages(namespace = 10)
 #' }
-get_all_pages <- function(limit = 500, 
-                          handle = NULL, 
+#'
+#' @export
+get_all_pages <- function(limit = 500,
+                          handle = NULL,
                           namespace = 0) {
   all_pages <- c()
   cont <- NULL
@@ -50,7 +52,7 @@ get_all_pages <- function(limit = 500,
       query = q,
       handle = handle
     )
-    
+
     if (!is.null(dat$error)) {
       stop(paste("API error:", dat$error$info))
     }
@@ -107,18 +109,20 @@ get_all_pages <- function(limit = 500,
 #' # Retrieve all pages in Category:Projects
 #' projects <- get_category_pages("Projects")
 #' }
+#'
+#' @export
 get_category_pages <- function(
     category,
     limit = 500,
     handle = NULL,
     namespace = 0
 ) {
-  
+
   cat_pages <- c()
   cont <- NULL
-  
+
   repeat {
-    
+
     q <- list(
       action = "query",
       list = "categorymembers",
@@ -126,23 +130,23 @@ get_category_pages <- function(
       cmlimit = limit,
       format = "json"
     )
-    
+
     if (!is.null(cont)) q <- c(q, cont)
-    
+
     dat <- appropedia_query(
       q,
       handle = handle
     )
-    
+
     if (!is.null(dat$error)) {
       stop(paste("API error:", dat$error$info))
     }
-    
-    pages <- 
-      dat$query$categorymembers[dat$query$categorymembers$ns == namespace, ] 
+
+    pages <-
+      dat$query$categorymembers[dat$query$categorymembers$ns == namespace, ]
     #  subset(dat$query$categorymembers, ns==namespace)[,3] substituted
     cat_pages <- c(cat_pages, pages)
-    
+
     if (!is.null(dat$continue)) {
       cont <- dat$continue
     } else {
@@ -154,11 +158,11 @@ get_category_pages <- function(
   } else {
     namespace_name = mediawiki_namespaces[namespace,]["name"]
   }
-  
-  message = paste ("Returned", length(cat_pages), 
-                   "pages from namespace:", 
+
+  message = paste ("Returned", length(cat_pages),
+                   "pages from namespace:",
                    namespace_name, "\n")
   cat(message)
-  return(cat_pages)
+  return(cat_pages$title)
 }
 

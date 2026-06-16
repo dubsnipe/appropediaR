@@ -73,6 +73,8 @@ get_appropedia_api_url <- function() {
 #'\dontrun{
 #' check_credentials()
 #'}
+#'
+#' @export
 check_credentials <- function() {
   username <- Sys.getenv("APPROPEDIA_API_USERNAME")
   password <- Sys.getenv("APPROPEDIA_API_PASSWORD")
@@ -84,12 +86,12 @@ check_credentials <- function() {
 }
 
 
-#' Obtain a MediaWiki login token 
-#' 
+#' Obtain a MediaWiki login token
+#'
 #' Retrieves a login token from the MediaWiki API.
 #' This is an internal helper function used by \code{do_login()} as part of
 #' the MediaWiki authentication process.
-#' 
+#'
 #' @param api_url Character string containing the MediaWiki API endpoint.
 #' Defaults to the URL configured in the local environment.
 #'@param handle Optional \code{httr} handle object used to maintain session
@@ -158,6 +160,8 @@ get_login_token <- function(api_url = get_appropedia_api_url(),
 #' \dontrun{
 #' session <- do_login()
 #' }
+#'
+#' @export
 do_login <- function(api_url = get_appropedia_api_url(),
                      handle = httr::handle(get_appropedia_api_url())) {
   login_token <- get_login_token(api_url, handle)
@@ -223,8 +227,10 @@ do_login <- function(api_url = get_appropedia_api_url(),
 #' session <- do_login()
 #' check_bot_rights(session)
 #' }
+#'
+#' @export
 check_bot_rights <- function(session) {
-  
+
   appropedia_query(
     list(
       action = "query",
@@ -234,7 +240,7 @@ check_bot_rights <- function(session) {
     ),
     handle = session$handle
   )
-  
+
   invisible(TRUE)
 }
 
@@ -246,6 +252,8 @@ check_bot_rights <- function(session) {
 #' \dontrun{
 #' session <- do_logout()
 #' }
+#'
+#' @export
 do_logout <- function(handle = httr::handle(get_appropedia_api_url())) {
   res <- httr::POST(
     get_appropedia_api_url(),

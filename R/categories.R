@@ -32,13 +32,15 @@
 #'   c("Water", "Ocean")
 #' )
 #' }
+#'
+#' @export
 get_categories_for_pages <- function(page_names) {
   q <- list(action = "query",
             prop = "categories",
             titles = paste(page_names, collapse = "|"),
             format = "json"
   )
-  
+
   json_res <- appropedia_query(query = q)
   pages <- json_res$query$pages
 
@@ -54,7 +56,7 @@ get_categories_for_pages <- function(page_names) {
           )
         )
       }
-      
+
       data.frame(
         page = page$title,
         category = sub("^Category:", "", page$categories$title),
@@ -62,11 +64,11 @@ get_categories_for_pages <- function(page_names) {
       )
     }
   )
-  
+
   df <- do.call(rbind, result)
   rownames(df) <- NULL
   df
-  
+
 }
 
 
@@ -109,8 +111,8 @@ batch_get_page_categories <- function(pages_list,
                             chunk_size = 50,
                             checkpoint_interval = 10,
                             delete_temp = TRUE) {
-  
-  
+
+
   chunked_pages_list <- split(pages_list, ceiling(seq_along(pages_list)/chunk_size))
 
   checkpoint <- load_checkpoint(
@@ -118,27 +120,27 @@ batch_get_page_categories <- function(pages_list,
     force_restart,
     default_value = list(
       categories_batch = vector(
-        "list", 
+        "list",
         length(chunked_pages_list)
         ),
       next_index = 1
     ),
     input_length = length(pages_list)
   )
-  
+
   categories_batch <- checkpoint$categories_batch
   start_i <- checkpoint$next_index
-  
+
   for (i in start_i:length(chunked_pages_list)) {
-    
+
     chunk <- chunked_pages_list[[i]]
-    
+
     if (length(chunk) == 0 || all(is.na(chunk))) {
       next
     }
-    
+
     categories_batch[[i]] <- get_categories_for_pages(chunk)
-    
+
     next_index <- checkpoint_manager(
       i = i,
       input_size = length(chunked_pages_list),
@@ -150,9 +152,9 @@ batch_get_page_categories <- function(pages_list,
       )
     )
   }
-  
+
   cleanup_checkpoint(checkpoint_file)
-  
+
   # flatten result if needed
   do.call(rbind, categories_batch)
 }
@@ -177,17 +179,19 @@ batch_get_page_categories <- function(pages_list,
 #' @examples
 #' \dontrun{
 #' count_pages_in_category("Water")
-#' } 
+#' }
+#'
+#' @export
 count_pages_in_category <- function(
     category,
     limit = 500
 ) {
-  
+
   offset <- 0
   processed_total  <- 0
-  
+
   repeat {
-    
+
     query <- paste(
       c(
         paste0("[[Category:", category, "]]"),
@@ -196,31 +200,31 @@ count_pages_in_category <- function(
       ),
       collapse = "|"
     )
-    
+
     cat("Querying offset", offset, "\n")
-    
+
     res <- get_semantic_query(query)
-    
+
     batch_size <- length(res$query$results)
-    
+
     processed_total  <- processed_total + batch_size
-    
+
     cat(
       "Retrieved", batch_size,
       "pages. Running total:", processed_total,
       "\n"
     )
-    
+
     next_offset <- res[["query-continue-offset"]]
-    
+
     if (is.null(next_offset)) {
       cat("Finished.\n")
       break
     }
-    
+
     offset <- next_offset
   }
-  
+
   return(processed_total)
 }
 
@@ -236,7 +240,7 @@ count_pages_in_category <- function(
 #' @param category Character string containing the category name.
 #' The \code{"Category:"} prefix is optional.
 #' @param limit Maximum number of pages requested per API call.
-#' @param namespace Namespace in numeric representation. 
+#' @param namespace Namespace in numeric representation.
 #'
 #' @return Character vector containing page titles.
 #'
@@ -248,14 +252,16 @@ count_pages_in_category <- function(
 #' \dontrun{
 #' pages <- get_pages_from_category("Water")
 #' }
-get_pages_from_category <- function(category, 
+#'
+#' @export
+get_pages_from_category <- function(category,
                                     limit = 500,
                                     namespace = 0) {
-  
+
   all_pages <- character()
   cmcontinue <- NULL
   cmnamespace <- paste(namespace, collapse = "|")
-  
+
   repeat {
     query <- list(
       action = "query",
@@ -265,27 +271,27 @@ get_pages_from_category <- function(category,
       cmnamespace = cmnamespace,
       format = "json"
     )
-    
+
     if (!is.null(cmcontinue)) {
       query$cmcontinue <- cmcontinue
     }
-    
+
     data <- appropedia_query(query = query)
     pages <- data$query$categorymembers
-    
+
     if (length(pages) > 0) {
       all_pages <- c(all_pages, pages$title)
     }
-    
+
     cat("Fetched total:", length(all_pages), "\n")
-    
+
     if (!is.null(data$continue$cmcontinue)) {
       cmcontinue <- data$continue$cmcontinue
     } else {
       break
     }
   }
-  
+
   return(all_pages)
 }
 
