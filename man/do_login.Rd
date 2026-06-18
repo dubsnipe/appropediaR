@@ -44,6 +44,7 @@ User credentials are read from the environment variables
 \dontrun{
 session <- do_login()
 }
+
 }
 \seealso{
 \code{\link{check_credentials}},

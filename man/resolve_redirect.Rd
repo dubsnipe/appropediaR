@@ -29,6 +29,7 @@ is encountered.
 \dontrun{
 resolve_redirect("Greywater")
 }
+
 }
 \seealso{
 \code{\link{get_redirect_url}},

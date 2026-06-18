@@ -29,6 +29,7 @@ retrieved.
 \dontrun{
 pages <- get_pages_from_category("Water")
 }
+
 }
 \seealso{
 \code{\link{get_categories_for_pages}},

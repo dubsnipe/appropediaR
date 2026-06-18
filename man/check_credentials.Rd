@@ -21,4 +21,5 @@ MediaWiki API.
 \dontrun{
 check_credentials()
 }
+
 }

@@ -25,7 +25,8 @@ page metadata or category memberships.
 \examples{
 \dontrun{
 count_pages_in_category("Water")
-} 
+}
+
 }
 \seealso{
 \code{\link{get_category_pages}}

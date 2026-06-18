@@ -38,6 +38,7 @@ pages <- get_category_pages("Water")
 # Retrieve all pages in Category:Projects
 projects <- get_category_pages("Projects")
 }
+
 }
 \seealso{
 \code{\link{get_all_pages}},

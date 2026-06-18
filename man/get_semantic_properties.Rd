@@ -66,6 +66,7 @@ metadata <- get_semantic_properties(
   property_map = property_map
 )
 }
+
 }
 \seealso{
 \code{\link{get_semantic_query}},

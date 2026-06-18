@@ -16,4 +16,5 @@ Log out of the API
 \dontrun{
 session <- do_logout()
 }
+
 }

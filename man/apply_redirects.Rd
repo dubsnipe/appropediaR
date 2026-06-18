@@ -47,6 +47,7 @@ pages <- c(
 
 resolved_pages <- apply_redirects(pages)
 }
+
 }
 \seealso{
 \code{\link{resolve_redirect}},

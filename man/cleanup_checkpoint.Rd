@@ -4,11 +4,15 @@
 \alias{cleanup_checkpoint}
 \title{Delete a checkpoint file}
 \usage{
-cleanup_checkpoint(checkpoint_file)
+cleanup_checkpoint(checkpoint_file, delete_temp = TRUE)
 }
 \arguments{
 \item{checkpoint_file}{Character string containing the checkpoint filename
 or file path.}
+
+\item{delete_temp}{When true, the function will delete the temporary
+file at the end of the iteration. Use false if you wish to keep the
+checkpoint file for further analysis.}
 }
 \value{
 Invisibly returns \code{TRUE} if the file was removed or does not

@@ -7,15 +7,12 @@ category <- "OAXIN"
 
 pages <- get_pages_from_category(category)
 
-pages <- apply_redirects(pages)
+translations <- get_pages_from_category("Automatic translations")
 
-# Remove automatic translations
-translations <- get_pages_from_category(
-  "Automatic translations"
-)
+redirected_pages <- apply_redirects(pages)
 
-pages_not_tl <- pages[
-  !(pages %in% translations)
+pages_not_tl <- redirected_pages[
+  !(redirected_pages %in% translations)
 ]
 
 metadata <- get_semantic_properties(

@@ -1,26 +1,32 @@
-#' Retrieve templates for a set of pages
+#' Retrieve links for a set of pages
 #'
-#' Queries the MediaWiki API and returns all templates transcluded in the
+#' Queries the MediaWiki API and returns all internal links found in the
 #' supplied pages.
 #'
 #' @param pages_list Character vector containing page titles.
 #'
-#' @return A data frame with one row per page-template relationship.
+#' @return A data frame with one row per page-link relationship.
+#' Columns:
+#' \itemize{
+#'   \item source_page
+#'   \item target_page
+#'   \item target_namespace
+#' }
 #'
 #' @examples
 #' \dontrun{
-#' get_templates_for_pages(
-#'   c("Water", "Energy")
+#' get_links_for_pages(
+#'   c("Energy", "Water")
 #' )
 #' }
 #' @export
-get_templates_for_pages <- function(pages_list) {
+get_links_for_pages <- function(pages_list) {
 
   query <- list(
     action = "query",
-    prop = "templates",
+    prop = "links",
     titles = paste(pages_list, collapse = "|"),
-    tllimit = "max",
+    pllimit = "max",
     format = "json"
   )
 
@@ -28,42 +34,40 @@ get_templates_for_pages <- function(pages_list) {
 
   pages <- res$query$pages
 
-  templates_df <- lapply(pages, function(page) {
+  links_df <- lapply(pages, function(page) {
 
-    if (is.null(page$templates) || nrow(page$templates) == 0) {
+    if (is.null(page$links) || nrow(page$links) == 0) {
       return(NULL)
     }
 
     data.frame(
       source_page = page$title,
-      template_name = sub(
-        "^Template:",
-        "",
-        page$templates$title
-      ),
+      target_page = page$links$title,
+      target_namespace = page$links$ns,
       stringsAsFactors = FALSE
     )
   })
 
-  templates_df <- Filter(Negate(is.null), templates_df)
+  links_df <- Filter(Negate(is.null), links_df)
 
-  if (length(templates_df) == 0) {
+  if (length(links_df) == 0) {
     return(
       data.frame(
         source_page = character(),
-        template_name = character(),
+        target_page = character(),
+        target_namespace = integer(),
         stringsAsFactors = FALSE
       )
     )
   }
 
-  do.call(rbind, templates_df)
+  do.call(rbind, links_df)
 }
 
 
-#' Retrieve templates for a large list of pages
+#' Retrieve links for a large list of pages
 #'
-#' Retrieves template transclusions for a large collection of pages by querying
+#' Retrieves internal page links for a large collection of pages by querying
 #' the MediaWiki API in batches.
 #'
 #' This function automatically chunks requests, periodically saves progress to
@@ -80,24 +84,18 @@ get_templates_for_pages <- function(pages_list) {
 #' @param delete_temp Logical indicating whether the checkpoint file should be
 #' removed after successful completion.
 #'
-#' @return A data frame with one row per page-template relationship.
+#' @return A data frame with one row per page-link relationship.
 #'
 #' @seealso
-#' \code{\link{get_templates_for_pages}},
+#' \code{\link{get_links_for_pages}},
 #' \code{\link{checkpoint_manager}},
 #' \code{\link{load_checkpoint}}
 #'
-#' @examples
-#' \dontrun{
-#' templates <- batch_get_page_templates(
-#'   pages_list = get_all_pages()
-#' )
-#' }
 #' @export
-batch_get_page_templates <- function(
+batch_get_page_links <- function(
     pages_list,
     force_restart = FALSE,
-    checkpoint_file = "templates_checkpoint.rds",
+    checkpoint_file = "links_checkpoint.rds",
     chunk_size = 50,
     checkpoint_interval = 10,
     delete_temp = TRUE
@@ -112,7 +110,7 @@ batch_get_page_templates <- function(
     checkpoint_file,
     force_restart,
     default_value = list(
-      templates_batch = vector(
+      links_batch = vector(
         "list",
         length(chunked_pages_list)
       ),
@@ -121,7 +119,7 @@ batch_get_page_templates <- function(
     input_length = length(pages_list)
   )
 
-  templates_batch <- checkpoint$templates_batch
+  links_batch <- checkpoint$links_batch
   start_i <- checkpoint$next_index
 
   for (i in start_i:length(chunked_pages_list)) {
@@ -132,7 +130,7 @@ batch_get_page_templates <- function(
       next
     }
 
-    templates_batch[[i]] <- get_templates_for_pages(chunk)
+    links_batch[[i]] <- get_links_for_pages(chunk)
 
     next_index <- checkpoint_manager(
       i = i,
@@ -140,7 +138,7 @@ batch_get_page_templates <- function(
       checkpoint_interval = checkpoint_interval,
       checkpoint_file = checkpoint_file,
       state = list(
-        templates_batch = templates_batch,
+        links_batch = links_batch,
         input_length = length(chunked_pages_list)
       )
     )
@@ -151,5 +149,5 @@ batch_get_page_templates <- function(
     delete_temp = delete_temp
   )
 
-  do.call(rbind, templates_batch)
+  do.call(rbind, links_batch)
 }

@@ -28,4 +28,5 @@ correspond to Semantic MediaWiki property names on the wiki.
 property_map["Page_title"]
 names(property_map)
 }
+
 }

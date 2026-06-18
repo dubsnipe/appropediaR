@@ -36,6 +36,7 @@ get_categories_for_pages(
   c("Water", "Ocean")
 )
 }
+
 }
 \seealso{
 \code{\link{batch_get_page_categories}},

@@ -25,18 +25,18 @@
 #' stop_if_invalid_session(session)
 #' }
 stop_if_invalid_session <- function(session) {
-  
+
   if (missing(session) || is.null(session)) {
     stop("A valid wiki_session is required.", call. = FALSE)
   }
-  
+
   if (!inherits(session, "wiki_session")) {
     stop(
       "session must be a wiki_session object returned by do_login().",
       call. = FALSE
     )
   }
-  
+
   invisible(TRUE)
 }
 
@@ -121,9 +121,9 @@ appropedia_save <- function(
     summary = "Automatic maintenance edit",
     bot = TRUE
 ) {
-  
+
   stop_if_invalid_session(session)
-  
+
   res <- retry_request(httr::POST(
     get_appropedia_api_url(),
     body = list(
@@ -138,20 +138,20 @@ appropedia_save <- function(
     encode = "form",
     handle = session$handle
   ))
-  
+
   response <- httr::content(
     res,
     as = "parsed",
     type = "application/json"
   )
-  
+
   if (!is.null(response$edit) &&
       response$edit$result == "Success") {
     return(TRUE)
   }
-  
+
   print(response)
-  
+
   FALSE
 }
 
@@ -170,18 +170,18 @@ appropedia_save <- function(
 #' get_checkpoint_dir()
 #'}
 get_checkpoint_dir <- function() {
-  
+
   dir <- tools::R_user_dir(
     "appropedia",
     which = "data"
   )
-  
+
   dir.create(
     dir,
     recursive = TRUE,
     showWarnings = FALSE
   )
-  
+
   dir
 }
 
@@ -208,7 +208,7 @@ get_checkpoint_dir <- function() {
 #' resolve_checkpoint_path("checkpoint.rds")
 #'}
 resolve_checkpoint_path <- function(checkpoint_file) {
-  
+
   if (is.null(checkpoint_file)) {
     return(
       file.path(
@@ -217,7 +217,7 @@ resolve_checkpoint_path <- function(checkpoint_file) {
       )
     )
   }
-  
+
   # no path supplied, only filename
   if (basename(checkpoint_file) == checkpoint_file) {
     return(
@@ -227,7 +227,7 @@ resolve_checkpoint_path <- function(checkpoint_file) {
       )
     )
   }
-  
+
   # user supplied full or relative path
   checkpoint_file
 }
@@ -272,33 +272,33 @@ load_checkpoint <- function(checkpoint_file,
                             default_value,
                             input_length = NULL
                             ) {
-  
+
   resolved_checkpoint_file <- resolve_checkpoint_path(checkpoint_file)
-  
+
   if (force_restart && file.exists(resolved_checkpoint_file)) {
     file.remove(resolved_checkpoint_file)
     message("Existing checkpoint removed. Starting from scratch.")
   }
-  
+
   if (file.exists(resolved_checkpoint_file)) {
-    
+
     checkpoint <- readRDS(resolved_checkpoint_file)
-    
-    validate_checkpoint_structure(checkpoint, 
-                                  names(default_value), 
+
+    validate_checkpoint_structure(checkpoint,
+                                  names(default_value),
                                   checkpoint_file)
-    
+
     if (!is.null(input_length)) {
       validate_checkpoint_length(checkpoint, input_length, checkpoint_file)
     }
-    
+
     return(checkpoint)
   } else {
-    
+
     checkpoint <- default_value
-    
+
   }
-  
+
   checkpoint
 }
 
@@ -335,7 +335,7 @@ validate_checkpoint_structure <- function(
     required_fields,
     names(checkpoint)
   )
-  
+
   if (length(missing) > 0) {
     stop(
       paste(
@@ -381,20 +381,20 @@ validate_checkpoint_length <- function(
     current_length,
     checkpoint_file
 ) {
-  
+
   actual_length <- checkpoint$input_length
-  
+
   # Fresh run or legacy checkpoint
   if (is.null(actual_length)) {
     return(invisible(TRUE))
   }
-  
+
   # Malformed checkpoint
   if (
     !is.numeric(actual_length) ||
     length(actual_length) != 1
   ) {
-    
+
     warning(
       paste(
         "Checkpoint",
@@ -402,12 +402,12 @@ validate_checkpoint_length <- function(
         "contains invalid input_length. Ignoring validation."
       )
     )
-    
+
     return(invisible(TRUE))
   }
-  
+
   if (actual_length != current_length) {
-    
+
     stop(
       paste(
         "Checkpoint was created for",
@@ -421,7 +421,7 @@ validate_checkpoint_length <- function(
       call. = FALSE
     )
   }
-  
+
   invisible(TRUE)
 }
 # Note: consider hashes for a better future validator.
@@ -495,25 +495,25 @@ checkpoint_manager <- function(
     state,
     label = "Checkpoint"
 ) {
-  
+
   checkpoint_file <- resolve_checkpoint_path(checkpoint_file)
   next_index <- i + 1
-  
+
   if (i %% checkpoint_interval == 0 && i < input_size) {
     next_index <- if (i < input_size) i + 1 else i
-    
+
     saveRDS(
       c(state, list(next_index = next_index, input_length = input_size)),
       checkpoint_file
       )
-    
+
     cat(label, "saved at row", i, "\n")
   }
-  
+
   next_index
 }
 # Future recommendation: split checkpoint system into:
-#   
+#
 # checkpoint_vector_state()   # redirects, linear processing
 # checkpoint_cursor_state()   # SMW, pagination
 
@@ -528,6 +528,10 @@ checkpoint_manager <- function(
 #' @param checkpoint_file Character string containing the checkpoint filename
 #' or file path.
 #'
+#' @param delete_temp When true, the function will delete the temporary
+#' file at the end of the iteration. Use false if you wish to keep the
+#' checkpoint file for further analysis.
+#'
 #' @return Invisibly returns \code{TRUE} if the file was removed or does not
 #' exist.
 #'
@@ -535,7 +539,7 @@ checkpoint_manager <- function(
 #' \dontrun{
 #' cleanup_checkpoint("redirects_checkpoint.rds")
 #' }
-cleanup_checkpoint <- function(checkpoint_file) {
+cleanup_checkpoint <- function(checkpoint_file, delete_temp = TRUE) {
   resolved_checkpoint_file <- resolve_checkpoint_path(checkpoint_file)
   if (file.exists(resolved_checkpoint_file)) {
     file.remove(resolved_checkpoint_file)
@@ -580,33 +584,33 @@ retry_request <- function(
     initial_delay = 5,
     max_delay = 60
 ) {
-  
+
   delay <- initial_delay
-  
+
   for (attempt in seq_len(max_retries)) {
-    
+
     result <- tryCatch(
       eval.parent(substitute(expr)),
       error = function(e) e
     )
-    
+
     if (!inherits(result, "error")) {
       return(result)
     }
-    
+
     message(
       "Attempt ",
       attempt,
       " failed: ",
       conditionMessage(result)
     )
-    
+
     if (attempt < max_retries) {
       Sys.sleep(delay)
       delay <- min(delay * 2, max_delay)
     }
   }
-  
+
   stop("Maximum retries exceeded.")
 }
 

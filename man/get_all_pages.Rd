@@ -38,6 +38,7 @@ pages <- get_all_pages()
 # Retrieve all templates
 templates <- get_all_pages(namespace = 10)
 }
+
 }
 \seealso{
 \code{\link{mediawiki_namespaces}}

@@ -28,6 +28,7 @@ is not authenticated as a bot account.
 session <- do_login()
 check_bot_rights(session)
 }
+
 }
 \seealso{
 \code{\link{do_login}}
