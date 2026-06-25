@@ -4,7 +4,7 @@
 \alias{get_pages_from_category}
 \title{Retrieve pages belonging to a category}
 \usage{
-get_pages_from_category(category, limit = 500, namespace = 0)
+get_pages_from_category(category, limit = 500, namespace = 0, verbose = TRUE)
 }
 \arguments{
 \item{category}{Character string containing the category name.
@@ -13,6 +13,8 @@ The \code{"Category:"} prefix is optional.}
 \item{limit}{Maximum number of pages requested per API call.}
 
 \item{namespace}{Namespace in numeric representation.}
+
+\item{verbose}{Provide details during the run.}
 }
 \value{
 Character vector containing page titles.

@@ -127,3 +127,29 @@ property_map <- c(
   SELF_self_assessment = "SELF self-assessment",
   SELF_subskills = "SELF subskills"
 )
+
+
+#' HTML selectors to be removed during text analysis
+#'
+#' Named character vector with a list of common templates to be removed on
+#' text extraction tasks.
+#'
+#' @format A named character vector.
+#'
+#'
+#' @export
+DEFAULT_REMOVE_SELECTORS <- c(
+  "table",
+  "template-databox"
+)
+
+
+#' Default except extraction size
+#'
+#' Number of characters extracted from text as an excerpt.
+#'
+#' @format An integer.
+#'
+#'
+#' @export
+DEFAULT_EXCERPT_SIZE <- 2000

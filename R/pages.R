@@ -78,6 +78,94 @@ get_all_pages <- function(limit = 500,
 }
 
 
+
+#' Retrieve all categories on the wiki
+#'
+#' Queries the MediaWiki API and returns all categories, optionally filtered
+#' by minimum membership size.
+#'
+#' @param limit Number of categories retrieved per API request.
+#' @param min_members Minimum number of members required for a category to be
+#' returned.
+#' @param handle Optional httr handle.
+#' @param verbose Provide details during the run.
+#'
+#' @return A data frame containing category information.
+#'
+#' @examples
+#' \dontrun{
+#' categories <- get_all_categories()
+#' }
+#' @export
+get_all_categories <- function(
+    limit = 500,
+    min_members = 10,
+    handle = NULL,
+    verbose = TRUE
+) {
+
+  all_categories <- list()
+  cont <- NULL
+
+  repeat {
+
+    q <- list(
+      action = "query",
+      list = "allcategories",
+      aclimit = limit,
+      acmin = min_members,
+      acprop = "size",
+      format = "json"
+    )
+
+    if (!is.null(cont)) {
+      q <- c(q, cont)
+    }
+
+    dat <- appropedia_query(
+      query = q,
+      handle = handle
+    )
+
+    categories <- dat$query$allcategories
+
+    if (!is.null(categories) && nrow(categories) > 0) {
+
+      names(categories)[names(categories) == "*"] <- "category"
+
+      all_categories[[length(all_categories) + 1]] <- categories
+    }
+
+    current_total <- sum(vapply(all_categories, nrow, integer(1)))
+
+    if (verbose) {
+      cat(
+        "Fetched total:",
+        current_total,
+        "categories\n"
+      )
+    }
+
+    if (!is.null(dat$continue)) {
+      cont <- dat$continue
+    } else {
+      break
+    }
+  }
+
+  if (length(all_categories) == 0) {
+    return(
+      data.frame(
+        category = character(),
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+
+  do.call(rbind, all_categories)
+}
+
+
 #' Retrieve pages from a category
 #'
 #' Retrieves the titles of pages belonging to a specified category using the
@@ -166,3 +254,69 @@ get_category_pages <- function(
   return(cat_pages$title)
 }
 
+
+#' Retrieve subcategories for a category
+#'
+#' @param category Category name without the "Category:" prefix.
+#'
+#' @return A data frame containing parent-child category relationships.
+#'
+#' @export
+get_category_subcategories <- function(category) {
+
+  subcategories <- get_pages_from_category(
+    category = category,
+    namespace = 14
+  )
+
+  if (length(subcategories) == 0) {
+    return(
+      data.frame(
+        parent_category = character(),
+        child_category = character(),
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+
+  data.frame(
+    parent_category = category,
+    child_category = sub("^Category:", "", subcategories),
+    stringsAsFactors = FALSE
+  )
+}
+
+
+#' Build Appropedia's category tree as a dictionary
+#'
+#' @return A database that pairs parent and child categories.
+#'
+#' @export
+get_category_tree <- function() {
+
+  categories <- get_all_categories(verbose = FALSE)
+
+  categories_with_children <- categories$category[
+    categories$subcats > 0
+  ]
+
+  tree <- lapply(
+    seq_along(categories_with_children),
+    function(i) {
+
+      cat(
+        i, "/",
+        length(categories_with_children),
+        ":",
+        categories_with_children[i],
+        "\n"
+      )
+
+      get_category_subcategories(
+        categories_with_children[i]
+      )
+    }
+  )
+
+  do.call(rbind, tree)
+}

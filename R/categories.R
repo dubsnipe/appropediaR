@@ -241,6 +241,7 @@ count_pages_in_category <- function(
 #' The \code{"Category:"} prefix is optional.
 #' @param limit Maximum number of pages requested per API call.
 #' @param namespace Namespace in numeric representation.
+#' @param verbose Provide details during the run.
 #'
 #' @return Character vector containing page titles.
 #'
@@ -256,7 +257,8 @@ count_pages_in_category <- function(
 #' @export
 get_pages_from_category <- function(category,
                                     limit = 500,
-                                    namespace = 0) {
+                                    namespace = 0,
+                                    verbose = TRUE) {
 
   all_pages <- character()
   cmcontinue <- NULL
@@ -283,7 +285,7 @@ get_pages_from_category <- function(category,
       all_pages <- c(all_pages, pages$title)
     }
 
-    cat("Fetched total:", length(all_pages), "\n")
+    if (verbose) { cat("Fetched total:", length(all_pages), "\n") }
 
     if (!is.null(data$continue$cmcontinue)) {
       cmcontinue <- data$continue$cmcontinue
@@ -297,3 +299,311 @@ get_pages_from_category <- function(category,
 
 
 
+#' Extract explicit categories from page wikitext.
+#'
+#' Identifies category declarations that are explicitly present in page
+#' content and returns their category names.
+#'
+#' Category names are extracted from MediaWiki category tags such as:
+#'
+#' \preformatted{
+#' [[Category:Water]]
+#' [[Category:Projects]]
+#' }
+#'
+#' Category declarations are matched case-insensitively, so the following
+#' are treated equivalently:
+#'
+#' \preformatted{
+#' [[Category:Water]]
+#' [[category:Water]]
+#' [[CATEGORY:Water]]
+#' }
+#'
+#' Categories added through template transclusion are not detected because
+#' they do not exist directly in the page wikitext.
+#'
+#' @param content Character string containing page wikitext.
+#'
+#' @return A character vector containing explicit category names. Returns
+#' an empty character vector if no explicit categories are found.
+#'
+#' Category sort keys are not currently preserved. For example:
+#'
+#' \preformatted{
+#' [[Category:Projects|Solar distiller]]
+#' }
+#'
+#' will return "Projects".
+#'
+#' @examples
+#' \dontrun{
+#' content <- "
+#' {{Page data}}
+#'
+#' [[Category:Water]]
+#' [[Category:Projects]]
+#' "
+#'
+#' extract_explicit_categories(content)
+#' }
+#'
+#' @export
+extract_explicit_categories <- function(content) {
+
+  matches <- stringr::str_match_all(
+    content,
+    "\\[\\[(?i:category):([^\\]|]+)"
+  )[[1]]
+
+  if (nrow(matches) == 0) {
+    return(character())
+  }
+
+  unique(trimws(matches[, 2]))
+}
+
+
+
+#' Modify explicit category declarations in page content.
+#'
+#' Applies add, delete and rename operations to explicit category tags found
+#' in the page wikitext. Categories added through templates are not modified.
+#'
+#' @param content Character string containing page wikitext.
+#' @param changes Data frame with columns:
+#'   action, old_category, new_category.
+#'
+#' @return A list containing:
+#' \itemize{
+#'   \item content
+#'   \item explicit_before
+#'   \item explicit_after
+#'   \item added
+#'   \item removed
+#'   \item renamed
+#'   \item changed
+#' }
+#'
+#' @export
+modify_categories <- function(
+    content,
+    changes
+) {
+
+  explicit_before <- extract_explicit_categories(
+    content
+  )
+
+  explicit_after <- explicit_before
+
+  added <- character()
+  removed <- character()
+
+  renamed <- data.frame(
+    old_category = character(),
+    new_category = character(),
+    stringsAsFactors = FALSE
+  )
+
+  for (i in seq_len(nrow(changes))) {
+
+    action <- changes$action[i]
+
+    if (action == "delete") {
+
+      category <- changes$old_category[i]
+
+      if (category %in% explicit_after) {
+
+        explicit_after <- setdiff(
+          explicit_after,
+          category
+        )
+
+        removed <- c(removed, category)
+      }
+
+    } else if (action == "rename") {
+
+      old_category <- changes$old_category[i]
+      new_category <- changes$new_category[i]
+
+      if (old_category %in% explicit_after) {
+
+        explicit_after[
+          explicit_after == old_category
+        ] <- new_category
+
+        renamed <- rbind(
+          renamed,
+          data.frame(
+            old_category = old_category,
+            new_category = new_category,
+            stringsAsFactors = FALSE
+          )
+        )
+      }
+
+    } else if (action == "add") {
+
+      category <- changes$new_category[i]
+
+      if (!(category %in% explicit_after)) {
+
+        explicit_after <- c(
+          explicit_after,
+          category
+        )
+
+        added <- c(
+          added,
+          category
+        )
+      }
+    }
+  }
+
+  modified_content <- content
+
+  #
+  # Remove all explicit category tags
+  #
+  modified_content <- gsub(
+    "\\[\\[(?i:category):[^\\]]+\\]\\]\\s*",
+    "",
+    modified_content,
+    perl = TRUE
+  )
+
+  #
+  # Append rebuilt explicit category block
+  #
+  if (length(explicit_after) > 0) {
+
+    category_text <- paste0(
+      "\n[[Category:",
+      explicit_after,
+      "]]",
+      collapse = ""
+    )
+
+    modified_content <- paste0(
+      trimws(modified_content),
+      "\n",
+      category_text,
+      "\n"
+    )
+  }
+
+  list(
+    content = modified_content,
+    explicit_before = explicit_before,
+    explicit_after = explicit_after,
+    added = added,
+    removed = removed,
+    renamed = renamed,
+    changed = !identical(
+      content,
+      modified_content
+    )
+  )
+}
+
+
+#' Update explicit categories on a page.
+#'
+#' Reads page wikitext, applies category modifications and optionally saves
+#' the result through the MediaWiki API.
+#'
+#' Only explicit category declarations present in the page wikitext are
+#' modified. Categories added through template transclusion are reported but
+#' not edited.
+#'
+#' @param page_name Character string containing the page title.
+#' @param changes Data frame containing category modifications.
+#'   Expected columns:
+#'   \itemize{
+#'     \item action
+#'     \item old_category
+#'     \item new_category
+#'   }
+#' @param session MediaWiki session object.
+#' @param dry_run Logical indicating whether edits should be saved.
+#'
+#' @return A list containing the modification report.
+#'
+#' @seealso
+#' \code{\link{modify_categories}},
+#' \code{\link{extract_explicit_categories}},
+#' \code{\link{get_page_content}}
+#'
+#' @export
+update_page_categories <- function(
+    page_name,
+    changes,
+    session,
+    dry_run = TRUE
+) {
+
+  content <- get_page_content(page_name)
+
+  if (is.null(content)) {
+
+    return(list(
+      page_name = page_name,
+      changed = FALSE,
+      saved = FALSE,
+      status = "page_not_found",
+      timestamp = Sys.time()
+    ))
+  }
+
+  category_report <- modify_categories(
+    content = content,
+    changes = changes
+  )
+
+  if (!category_report$changed) {
+
+    return(list(
+      page_name = page_name,
+      changed = FALSE,
+      saved = FALSE,
+      status = "no_change",
+      explicit_before = category_report$explicit_before,
+      explicit_after = category_report$explicit_after,
+      timestamp = Sys.time()
+    ))
+  }
+
+  if (!dry_run) {
+
+    appropedia_save(
+      page_name = page_name,
+      content = category_report$content,
+      session = session,
+      summary = "Updating categories"
+    )
+
+    saved <- TRUE
+
+  } else {
+
+    saved <- FALSE
+  }
+
+  c(
+    list(
+      page_name = page_name,
+      saved = saved,
+      status = ifelse(
+        dry_run,
+        "dry_run",
+        "saved"
+      ),
+      timestamp = Sys.time()
+    ),
+    category_report
+  )
+}
