@@ -51,6 +51,16 @@ extract_text <- function(
     paragraphs
   )
 
+  paragraphs <- gsub(
+    "[[:space:]]+",
+    " ",
+    paragraphs
+  )
+
+  paragraphs <- trimws(
+    paragraphs
+  )
+
   paragraphs <- paragraphs[
     nzchar(paragraphs)
   ]
@@ -65,7 +75,7 @@ extract_text <- function(
 
   full_text <- paste(
     paragraphs,
-    collapse = "\n\n"
+    collapse =  " "
   )
 
   if (strategy == "all") {

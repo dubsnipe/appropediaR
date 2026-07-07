@@ -153,3 +153,34 @@ DEFAULT_REMOVE_SELECTORS <- c(
 #'
 #' @export
 DEFAULT_EXCERPT_SIZE <- 2000
+
+
+#' Databox templates
+#'
+#' Vector with the names of standardized databox templates on Appropedia.
+#'
+#' @format A vector.
+#'
+#'
+#' @export
+databoxes <- c(
+  "Category data",
+  "Device data",
+  "File data",
+  "Location data",
+  "Material data",
+  "Materials data",
+  "Medical equipment data",
+  "Medical knowledge data",
+  "Medical skill data",
+  "Organization data",
+  "Page data",
+  "Project data",
+  "Property data",
+  "Publication data",
+  "SELF module navigation",
+  "Simulator data",
+  "SMD simulation data",
+  "Synonym data",
+  "User data"
+)
