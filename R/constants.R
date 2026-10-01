@@ -1,5 +1,3 @@
-#' constants.R
-
 #' MediaWiki namespace definitions
 #'
 #' Lookup table containing MediaWiki namespace IDs and their corresponding

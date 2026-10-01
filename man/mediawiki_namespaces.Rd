@@ -2,8 +2,7 @@
 % Please edit documentation in R/constants.R
 \name{mediawiki_namespaces}
 \alias{mediawiki_namespaces}
-\title{constants.R
-MediaWiki namespace definitions}
+\title{MediaWiki namespace definitions}
 \format{
 A data frame with two columns:
 \describe{
