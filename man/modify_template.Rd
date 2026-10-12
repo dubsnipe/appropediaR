@@ -2,8 +2,7 @@
 % Please edit documentation in R/modify_template.R
 \name{modify_template}
 \alias{modify_template}
-\title{templates.r
-Modify a template parameter in page wikitext}
+\title{Modify a template parameter in page wikitext}
 \usage{
 modify_template(content, new_value, template_name, param_name)
 }

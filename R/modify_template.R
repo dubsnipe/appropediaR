@@ -1,6 +1,3 @@
-#' templates.r
-
-
 #' Modify a template parameter in page wikitext
 #'
 #' Updates or inserts a parameter inside a template contained in a page's
@@ -136,3 +133,4 @@ modify_template <- function(content, new_value, template_name, param_name) {
     changed = !identical(content, original_content)
   )
 }
+

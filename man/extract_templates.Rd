@@ -9,8 +9,8 @@ extract_templates(page_title, databoxes)
 \arguments{
 \item{page_title}{Wiki page title}
 
-\item{databoxes}{Vector containing Appropedia databox templates, e.g.,
-{{Page data}} and {{Project data}}}
+\item{databoxes}{Vector containing Appropedia databox templates,
+e.g., \verb{\{\{Page data\}\}} and \verb{\{\{Project data\}\}}.}
 }
 \value{
 Data frame.
