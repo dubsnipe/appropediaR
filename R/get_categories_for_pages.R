@@ -1,69 +1,72 @@
-#' Retrieve category memberships for one or more pages
+#' Get categories for multiple pages
 #'
-#' Queries the MediaWiki API and returns the categories assigned to one or more
-#' pages.
+#' Retrieves all categories associated with each page,
+#' following MediaWiki API continuation when necessary.
 #'
-#' Multiple page titles may be supplied in a single request, allowing category
-#' information to be collected efficiently in batches.
+#' @param page_names Character vector of page titles.
 #'
-#' @param page_names Character vector containing one or more page titles.
-#'
-#' @return A data frame with one row per page-category relationship and the
-#' following columns:
-#' \itemize{
-#'   \item \code{page}: page title.
-#'   \item \code{category}: category name.
-#' }
-#'
-#' Category names are returned without the \code{"Category:"} prefix.
-#'
-#' @seealso
-#' \code{\link{batch_get_page_categories}},
-#' \code{\link{get_pages_from_category}}
-#'
-#' @examples
-#' \dontrun{
-#' get_categories_for_pages("Water")
-#'
-#' get_categories_for_pages(
-#'   c("Water", "Ocean")
-#' )
-#' }
-#'
+#' @return Data frame with columns `page` and `category`.
 #' @export
 get_categories_for_pages <- function(page_names) {
-  q <- list(action = "query",
-            prop = "categories",
-            titles = paste(page_names, collapse = "|"),
-            format = "json"
-  )
 
-  json_res <- appropedia_query(query = q)
-  pages <- json_res$query$pages
+  stopifnot(is.character(page_names))
 
-  result <- lapply(
-    pages,
-    function(page) {
-      if (is.null(page$categories)){
-        return(
-          data.frame(
-            page = page$title,
-            category = NA_character_,
-            stringsAsFactors = FALSE
+  if (length(page_names) == 0L) {
+    return(data.frame(
+      page = character(),
+      category = character()
+    ))
+  }
+
+  results <- list()
+  continuation <- NULL
+
+  repeat {
+
+    q <- list(
+      action = "query",
+      prop = "categories",
+      titles = paste(unique(page_names), collapse = "|"),
+      cllimit = "max",
+      format = "json"
+    )
+
+    if (!is.null(continuation)) {
+      q <- c(q, continuation)
+    }
+
+    response <- appropedia_query(query = q)
+
+    pages <- response$query$pages
+
+    for (page in pages) {
+
+      if (!is.null(page$categories)) {
+        results[[length(results) + 1L]] <- data.frame(
+          page = page$title,
+          category = sub(
+            "^Category:",
+            "",
+            page$categories$title
           )
         )
       }
-
-      data.frame(
-        page = page$title,
-        category = sub("^Category:", "", page$categories$title),
-        stringsAsFactors = FALSE
-      )
     }
-  )
 
-  df <- do.call(rbind, result)
-  rownames(df) <- NULL
-  df
+    continuation <- response$continue
 
+    if (is.null(continuation)) break
+  }
+
+  if (length(results) == 0L) {
+    return(data.frame(
+      page = character(),
+      category = character()
+    ))
+  }
+
+  result <- unique(do.call(rbind, results))
+  rownames(result) <- NULL
+
+  result
 }

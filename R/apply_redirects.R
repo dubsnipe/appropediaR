@@ -66,7 +66,7 @@ apply_redirects <- function(names_list,
 
     final_target <- resolve_redirect(names_list[i])
     if (final_target != names_list[i]) {
-      cat(" \u2192 Redirect resolved to:", final_target, "\n")
+      cat("✅ Redirect resolved to:", final_target, "\n")
       resolved[i] <- final_target
     } else {
       cat(" \u2192 No redirect\n")
