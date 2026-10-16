@@ -2,42 +2,17 @@
 % Please edit documentation in R/get_categories_for_pages.R
 \name{get_categories_for_pages}
 \alias{get_categories_for_pages}
-\title{Retrieve category memberships for one or more pages}
+\title{Get categories for multiple pages}
 \usage{
 get_categories_for_pages(page_names)
 }
 \arguments{
-\item{page_names}{Character vector containing one or more page titles.}
+\item{page_names}{Character vector of page titles.}
 }
 \value{
-A data frame with one row per page-category relationship and the
-following columns:
-\itemize{
-\item \code{page}: page title.
-\item \code{category}: category name.
-}
-
-Category names are returned without the \code{"Category:"} prefix.
+Data frame with columns \code{page} and \code{category}.
 }
 \description{
-Queries the MediaWiki API and returns the categories assigned to one or more
-pages.
-}
-\details{
-Multiple page titles may be supplied in a single request, allowing category
-information to be collected efficiently in batches.
-}
-\examples{
-\dontrun{
-get_categories_for_pages("Water")
-
-get_categories_for_pages(
-  c("Water", "Ocean")
-)
-}
-
-}
-\seealso{
-\code{\link{batch_get_page_categories}},
-\code{\link{get_pages_from_category}}
+Retrieves all categories associated with each page,
+following MediaWiki API continuation when necessary.
 }

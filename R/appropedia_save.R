@@ -27,6 +27,7 @@
 #'   session = session
 #' )
 #' }
+#' @export
 appropedia_save <- function(
     page_name,
     content,
